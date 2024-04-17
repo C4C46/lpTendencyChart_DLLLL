@@ -15,13 +15,14 @@
 #include <QPushButton>
 #include <QDoubleValidator>
 #include <QStringList>
-#include "ChartUpdaterThread.h"
+#include <QSplitter> 
 #include <qwt_plot_magnifier.h>
 #include <qwt_text.h>
 #include <qwt_legend.h>
 #include <qwt_legend_label.h>
 #include <QMouseEvent>
 #include "ConfigLoader.h"
+#include "ChartUpdaterThread.h"
 class ChartManager : public QObject {
     Q_OBJECT
 
@@ -52,6 +53,8 @@ private:
 	double xInterval = 10; // 默认x间隔值
 	double yInterval = 10; // 默认y间隔值
 	QTableWidget *table; // 添加表格成员变量
+
+	bool autoScrollEnabled = true; // 默认启用自动滚动
 
 	void resetCurvesOpacity(); // 添加成员变量存储曲线名称
 	void installEventFilters();//恢复所有曲线显示

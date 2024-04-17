@@ -29,5 +29,4 @@ private:
 	ChartManager *chartManager{ nullptr };
 	ConfigLoader *configLoader{ nullptr };
 
-	QPushButton* toggleTableButton;
 };

@@ -16,6 +16,8 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 	plot->setAxisTitle(QwtPlot::xBottom,"");
 	plot->setAxisTitle(QwtPlot::yLeft,"");
 
+	plot->setCanvasBackground(QColor(14,22,55));
+
 	// 创建并配置网格
 	QwtPlotGrid *grid = new QwtPlotGrid();
 	grid->attach(plot); // 将网格附加到图表
@@ -35,11 +37,11 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 		}
 	}
 
-
 	if (m_widget)
 	{
-		QVBoxLayout *layout = new QVBoxLayout(m_widget);
-		layout->addWidget(plot);
+		// 使用QSplitter代替原来的布局
+		QSplitter *splitter = new QSplitter(Qt::Vertical, m_widget);
+		splitter->addWidget(plot);
 
 
 		table = new QTableWidget(m_widget);
@@ -59,8 +61,10 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 			table->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
 		}
 		table->verticalHeader()->setVisible(false);
-		// 添加表格到布局
-		layout->addWidget(table);
+		splitter->addWidget(table);
+
+		QVBoxLayout *layout = new QVBoxLayout(m_widget);
+		layout->addWidget(splitter);
 		m_widget->setLayout(layout);
 
 	}
@@ -286,6 +290,18 @@ void ChartManager::onCurveDisplayChanged(const QString &curveName, bool display)
 				updatedCurveNames.append(curve->title().text());
 			}
 			updaterThread->updateCurveNames(updatedCurveNames);
+
+			// 添加曲线名称到curveNames列表，用于表格列的同步
+			curveNames.append(curveName);
+
+			// 添加列到表格
+			int newColumnIndex = table->columnCount();
+			table->insertColumn(newColumnIndex);
+			table->setHorizontalHeaderItem(newColumnIndex, new QTableWidgetItem(curveName));
+			// 为已有行的新列填充默认值
+			for (int row = 0; row < table->rowCount(); ++row) {
+				table->setItem(row, newColumnIndex, new QTableWidgetItem("NaN"));
+			}
 		}
 	}
 	else {
@@ -304,6 +320,11 @@ void ChartManager::onCurveDisplayChanged(const QString &curveName, bool display)
 			updatedCurveNames.append(curve->title().text());
 		}
 		updaterThread->updateCurveNames(updatedCurveNames);
+		int columnIndex = curveNames.indexOf(curveName) + 1; // +1 因为第一列是固定的“位置(m)”
+		if (columnIndex > 0) {
+			table->removeColumn(columnIndex);
+			curveNames.removeAll(curveName); // 从曲线名称列表中移除
+		}
 	}
 
 	plot->replot(); // 重绘图表
