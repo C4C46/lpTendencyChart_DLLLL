@@ -18,6 +18,10 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 
 	plot->setCanvasBackground(QColor(14,22,55));
 
+	//// 设置默认的x轴和y轴间隔
+	//plot->setAxisScale(QwtPlot::xBottom, 0, 100, xInterval); // 使用xInterval初始化x轴
+	//plot->setAxisScale(QwtPlot::yLeft, 0, 100, yInterval); // 使用yInterval初始化y轴
+
 	// 创建并配置网格
 	QwtPlotGrid *grid = new QwtPlotGrid();
 	grid->attach(plot); // 将网格附加到图表
@@ -80,7 +84,7 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 
 	installEventFilters();
 
-
+	//plot->replot(); // 重绘图表以应用新的轴间隔
 
 }
 
@@ -171,10 +175,12 @@ void ChartManager::onIntervalPBClicked() {
 
 	QLabel xLabel("设置x轴间隔米数：", &dialog);
 	QLineEdit xInput(&dialog);
+	xInput.setText(QString::number(xInterval)); // 使用xInterval初始化文本
 	xInput.setValidator(new QDoubleValidator(0, 10000, 2, &xInput)); // 限制输入为数字
 
 	QLabel yLabel("设置y轴间隔毫米数：", &dialog);
 	QLineEdit yInput(&dialog);
+	yInput.setText(QString::number(yInterval)); // 使用yInterval初始化文本
 	yInput.setValidator(new QDoubleValidator(0, 10000, 2, &yInput)); // 限制输入为数字
 
 	QPushButton confirmButton("确认", &dialog);
