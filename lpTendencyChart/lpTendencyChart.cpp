@@ -51,7 +51,13 @@ void ChartDemo::toggleTableVisibility()
 	ui->Toggle_PB->setText(ui->tableWidget->isVisible() ? "趋势指标勾选隐藏" : "趋势指标勾选显示");
 }
 
+QwtPlot* ChartDemo::getPlot() const {
+	return chartManager ? chartManager->GetPlot() : nullptr;
+}
 
+QTableWidget* ChartDemo::getTable() const {
+	return chartManager ? chartManager->GetTable() : nullptr;
+}
 
 
 

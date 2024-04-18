@@ -18,7 +18,8 @@ public:
 	~ChartDemo();
 
 	void init();
-
+	QwtPlot* getPlot() const;
+	QTableWidget* getTable() const;
 
 public slots:
 	void handleIntervalPBClicked();

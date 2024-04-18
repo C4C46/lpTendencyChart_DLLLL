@@ -32,6 +32,9 @@ public:
     void start();
 	QWidget* getWidget();
 
+	QwtPlot* GetPlot() const { return plot;}
+	QTableWidget* GetTable() const { return table;}
+
 
 protected:
 	bool eventFilter(QObject *watched, QEvent *event) override;
@@ -42,6 +45,7 @@ public slots:
 	void addCurve(const QString &curveName, const QColor &color); 
 	void onLegendClicked(const QVariant &itemInfo, int index);
 	void onCurveDisplayChanged(const QString &curveName, bool display); // 添加这个槽函数
+
 
 private:
 	QWidget *m_widget; 
