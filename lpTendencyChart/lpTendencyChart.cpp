@@ -3,15 +3,15 @@
 
 #pragma execution_character_set("utf-8")
 
-ChartDemo::ChartDemo(QWidget *parent)
-	: QWidget(parent), ui(new Ui_ChartDemoClass)
+lpTendencyChart::lpTendencyChart(QWidget *parent)
+	: QWidget(parent), ui(new Ui_lpTendencyClass)
 {
 	ui->setupUi(this);
 	init();
 
 }
 
-ChartDemo::~ChartDemo()
+lpTendencyChart::~lpTendencyChart()
 {
 	configLoader->saveConfig("Config/Event.json");
 	if (chartManager)
@@ -20,7 +20,7 @@ ChartDemo::~ChartDemo()
 		delete configLoader;
 }
 
-void ChartDemo::init()
+void lpTendencyChart::init()
 {
 	configLoader = new ConfigLoader(ui->tableWidget, this);
 	configLoader->loadConfig("Config/Event.json");
@@ -32,30 +32,30 @@ void ChartDemo::init()
 	connect(configLoader, &ConfigLoader::curveDisplayChanged, chartManager, &ChartManager::onCurveDisplayChanged);
 	
 	ui->Toggle_PB->setText("趋势指标勾选隐藏");
-	connect(ui->Interval_PB, &QPushButton::clicked, this, &ChartDemo::handleIntervalPBClicked);
-	connect(ui->Toggle_PB, &QPushButton::clicked, this, &ChartDemo::toggleTableVisibility);
+	connect(ui->Interval_PB, &QPushButton::clicked, this, &lpTendencyChart::handleIntervalPBClicked);
+	connect(ui->Toggle_PB, &QPushButton::clicked, this, &lpTendencyChart::toggleTableVisibility);
 }
 
 
 
-void ChartDemo::handleIntervalPBClicked() {
+void lpTendencyChart::handleIntervalPBClicked() {
 	if (chartManager) {
 		chartManager->onIntervalPBClicked();//用于显示间隔设置对话框
 	}
 }
 
 
-void ChartDemo::toggleTableVisibility()
+void lpTendencyChart::toggleTableVisibility()
 {
 	ui->tableWidget->setVisible(!ui->tableWidget->isVisible());
 	ui->Toggle_PB->setText(ui->tableWidget->isVisible() ? "趋势指标勾选隐藏" : "趋势指标勾选显示");
 }
 
-QwtPlot* ChartDemo::getPlot() const {
+QwtPlot* lpTendencyChart::getPlot() const {
 	return chartManager ? chartManager->GetPlot() : nullptr;
 }
 
-QTableWidget* ChartDemo::getTable() const {
+QTableWidget* lpTendencyChart::getTable() const {
 	return chartManager ? chartManager->GetTable() : nullptr;
 }
 

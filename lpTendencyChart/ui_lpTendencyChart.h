@@ -24,7 +24,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Ui_ChartDemoClass
+class Ui_lpTendencyClass
 {
 public:
     QGridLayout *gridLayout_2;
@@ -40,12 +40,12 @@ public:
     QSpacerItem *horizontalSpacer_2;
     QPushButton *Toggle_PB;
 
-    void setupUi(QWidget *ChartDemoClass)
+    void setupUi(QWidget *lpTendencyClass)
     {
-        if (ChartDemoClass->objectName().isEmpty())
-            ChartDemoClass->setObjectName(QStringLiteral("ChartDemoClass"));
-        ChartDemoClass->resize(1060, 636);
-        gridLayout_2 = new QGridLayout(ChartDemoClass);
+        if (lpTendencyClass->objectName().isEmpty())
+            lpTendencyClass->setObjectName(QStringLiteral("lpTendencyClass"));
+        lpTendencyClass->resize(1060, 636);
+        gridLayout_2 = new QGridLayout(lpTendencyClass);
         gridLayout_2->setSpacing(6);
         gridLayout_2->setContentsMargins(11, 11, 11, 11);
         gridLayout_2->setObjectName(QStringLiteral("gridLayout_2"));
@@ -55,7 +55,7 @@ public:
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setSpacing(6);
         horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
-        tableWidget = new QTableWidget(ChartDemoClass);
+        tableWidget = new QTableWidget(lpTendencyClass);
         tableWidget->setObjectName(QStringLiteral("tableWidget"));
         tableWidget->setMinimumSize(QSize(230, 0));
         tableWidget->setMaximumSize(QSize(300, 16777215));
@@ -72,7 +72,7 @@ public:
 
         horizontalLayout->addItem(horizontalSpacer);
 
-        Interval_PB = new QPushButton(ChartDemoClass);
+        Interval_PB = new QPushButton(lpTendencyClass);
         Interval_PB->setObjectName(QStringLiteral("Interval_PB"));
 
         horizontalLayout->addWidget(Interval_PB);
@@ -80,7 +80,7 @@ public:
 
         verticalLayout->addLayout(horizontalLayout);
 
-        Chartwidget = new QWidget(ChartDemoClass);
+        Chartwidget = new QWidget(lpTendencyClass);
         Chartwidget->setObjectName(QStringLiteral("Chartwidget"));
         Chartwidget->setMinimumSize(QSize(800, 550));
         Chartwidget->setSizeIncrement(QSize(8, 0));
@@ -94,7 +94,7 @@ public:
 
         horizontalLayout_2->addItem(horizontalSpacer_2);
 
-        Toggle_PB = new QPushButton(ChartDemoClass);
+        Toggle_PB = new QPushButton(lpTendencyClass);
         Toggle_PB->setObjectName(QStringLiteral("Toggle_PB"));
 
         horizontalLayout_2->addWidget(Toggle_PB);
@@ -112,22 +112,22 @@ public:
         gridLayout_2->addLayout(gridLayout, 0, 0, 1, 1);
 
 
-        retranslateUi(ChartDemoClass);
+        retranslateUi(lpTendencyClass);
 
-        QMetaObject::connectSlotsByName(ChartDemoClass);
+        QMetaObject::connectSlotsByName(lpTendencyClass);
     } // setupUi
 
-    void retranslateUi(QWidget *ChartDemoClass)
+    void retranslateUi(QWidget *lpTendencyClass)
     {
-        ChartDemoClass->setWindowTitle(QApplication::translate("ChartDemoClass", "ChartDemo", Q_NULLPTR));
-        Interval_PB->setText(QApplication::translate("ChartDemoClass", "\345\217\202\346\225\260\350\256\276\347\275\256", Q_NULLPTR));
-        Toggle_PB->setText(QApplication::translate("ChartDemoClass", "\350\266\213\345\212\277\346\214\207\346\240\207\351\232\220\350\227\217", Q_NULLPTR));
+        lpTendencyClass->setWindowTitle(QApplication::translate("lpTendencyClass", "ChartDemo", Q_NULLPTR));
+        Interval_PB->setText(QApplication::translate("lpTendencyClass", "\345\217\202\346\225\260\350\256\276\347\275\256", Q_NULLPTR));
+        Toggle_PB->setText(QApplication::translate("lpTendencyClass", "\350\266\213\345\212\277\346\214\207\346\240\207\351\232\220\350\227\217", Q_NULLPTR));
     } // retranslateUi
 
 };
 
 namespace Ui {
-    class ChartDemoClass: public Ui_ChartDemoClass {};
+    class lpTendencyClass: public Ui_lpTendencyClass {};
 } // namespace Ui
 
 QT_END_NAMESPACE
