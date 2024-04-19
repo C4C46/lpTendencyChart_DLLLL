@@ -18,7 +18,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
-#include <QtWidgets/QTableWidget>
+#include <QtWidgets/QTreeWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -27,10 +27,9 @@ QT_BEGIN_NAMESPACE
 class Ui_lpTendencyClass
 {
 public:
-    QGridLayout *gridLayout_2;
     QGridLayout *gridLayout;
     QHBoxLayout *horizontalLayout_3;
-    QTableWidget *tableWidget;
+    QTreeWidget *treeWidget;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer;
@@ -44,23 +43,19 @@ public:
     {
         if (lpTendencyClass->objectName().isEmpty())
             lpTendencyClass->setObjectName(QStringLiteral("lpTendencyClass"));
-        lpTendencyClass->resize(1060, 636);
-        gridLayout_2 = new QGridLayout(lpTendencyClass);
-        gridLayout_2->setSpacing(6);
-        gridLayout_2->setContentsMargins(11, 11, 11, 11);
-        gridLayout_2->setObjectName(QStringLiteral("gridLayout_2"));
-        gridLayout = new QGridLayout();
+        lpTendencyClass->resize(1029, 648);
+        gridLayout = new QGridLayout(lpTendencyClass);
         gridLayout->setSpacing(6);
+        gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setSpacing(6);
         horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
-        tableWidget = new QTableWidget(lpTendencyClass);
-        tableWidget->setObjectName(QStringLiteral("tableWidget"));
-        tableWidget->setMinimumSize(QSize(230, 0));
-        tableWidget->setMaximumSize(QSize(300, 16777215));
+        treeWidget = new QTreeWidget(lpTendencyClass);
+        treeWidget->setObjectName(QStringLiteral("treeWidget"));
+        treeWidget->setMinimumSize(QSize(220, 0));
 
-        horizontalLayout_3->addWidget(tableWidget);
+        horizontalLayout_3->addWidget(treeWidget);
 
         verticalLayout = new QVBoxLayout();
         verticalLayout->setSpacing(6);
@@ -107,9 +102,6 @@ public:
 
 
         gridLayout->addLayout(horizontalLayout_3, 0, 0, 1, 1);
-
-
-        gridLayout_2->addLayout(gridLayout, 0, 0, 1, 1);
 
 
         retranslateUi(lpTendencyClass);

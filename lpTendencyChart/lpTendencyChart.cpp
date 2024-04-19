@@ -22,7 +22,7 @@ lpTendencyChart::~lpTendencyChart()
 
 void lpTendencyChart::init()
 {
-	configLoader = new ConfigLoader(ui->tableWidget, this);
+	configLoader = new ConfigLoader(ui->treeWidget, this);
 	configLoader->loadConfig("Config/Event.json");
 
 
@@ -47,8 +47,8 @@ void lpTendencyChart::handleIntervalPBClicked() {
 
 void lpTendencyChart::toggleTableVisibility()
 {
-	ui->tableWidget->setVisible(!ui->tableWidget->isVisible());
-	ui->Toggle_PB->setText(ui->tableWidget->isVisible() ? "趋势指标勾选隐藏" : "趋势指标勾选显示");
+	ui->treeWidget->setVisible(!ui->treeWidget->isVisible());
+	ui->Toggle_PB->setText(ui->treeWidget->isVisible() ? "趋势指标勾选隐藏" : "趋势指标勾选显示");
 }
 
 QwtPlot* lpTendencyChart::getPlot() const {
