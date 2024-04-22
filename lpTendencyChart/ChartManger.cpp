@@ -15,6 +15,10 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 	// 设置X轴和Y轴的标题
 	plot->setAxisTitle(QwtPlot::xBottom,"");
 	plot->setAxisTitle(QwtPlot::yLeft,"");
+	// 设置X轴和Y轴的初始范围
+	plot->setAxisScale(QwtPlot::xBottom, 0, 50); // 设置X轴的范围为0-50
+	plot->setAxisScale(QwtPlot::yLeft, 0, 900); // 设置Y轴的范围为0-900
+
 
 	plot->setCanvasBackground(QColor(14,22,55));
 
@@ -170,100 +174,81 @@ void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
 
 void ChartManager::onIntervalPBClicked() {
 	QDialog dialog(m_widget); // 使用当前widget作为父窗口
-	//QVBoxLayout layout(&dialog);
-	dialog.setWindowTitle("预警值设置");
-	dialog.resize(650, 500);
+	dialog.setWindowTitle("参数设置");
+	dialog.resize(550, 800);
 	dialog.setFixedSize(dialog.size());
 
 	QGridLayout *gridLayout = new QGridLayout();
 
-	QStringList warningLabels = {
-	"设置A/B面左侧陶瓷宽度预警值（毫米）",
-	"设置A/B面右侧陶瓷宽度预警值（毫米）", // 假设的新标签
-	"设置A/B面电浆宽度预警值（毫米）", // 假设的新标签
-	"设置A/B面整体宽度预警值（毫米）"  // 假设的新标签
+	QStringList settingLabels = {
+		"A/B面整体宽度",
+		"A/B面电浆宽度",
+		"A/B面左侧陶瓷宽度",
+		"A/B面右侧陶瓷宽度",
+		"A/B面对齐度"
 	};
 
+	// 对于每个设置项，我们需要创建不同的控件
+	for (int i = 0; i < settingLabels.size(); ++i) {
+		int row = i * 4; // 每个设置占用4行
 
-	QStringList alarmLabels = {
-	"设置A/B面左侧陶瓷宽度告警值（毫米）",
-	"设置A/B面右侧陶瓷宽度告警值（毫米）", // 假设的新标签
-	"设置A/B面电浆宽度告警值（毫米）", // 假设的新标签
-	"设置A/B面整体宽度告警值（毫米）"  // 假设的新标签
-	};
+		// 设置标签
+		QLabel* settingLabel = new QLabel(settingLabels[i], &dialog);
+		settingLabel->setStyleSheet("QLabel { font-weight: bold; }");
+		gridLayout->addWidget(settingLabel, row, 0, 1, 2);
 
-	for (int i = 0; i < warningLabels.size(); ++i) {
+		// 趋势图y轴显示区域设置
+		QHBoxLayout* rangeLayout = new QHBoxLayout;
+		QLabel* rangeLabel = new QLabel("设置趋势图y轴显示区域（毫米）：", &dialog);
+		QLineEdit* rangeInput1 = new QLineEdit(&dialog);
+		rangeInput1->setValidator(new QDoubleValidator(0, 10000, 2, rangeInput1));
+		QLabel *separator = new QLabel(" --- ", &dialog);
+		QLineEdit* rangeInput2 = new QLineEdit(&dialog);
+		rangeInput2->setValidator(new QDoubleValidator(0, 10000, 2, rangeInput2));
+		rangeLayout->addWidget(rangeLabel);
+		rangeLayout->addWidget(rangeInput1);
+		rangeLayout->addWidget(separator);
+		rangeLayout->addWidget(rangeInput2);
+		gridLayout->addLayout(rangeLayout, row + 1, 0, 1, 2);
 
-		int row = i / 2; // 计算行
-		int col = i % 2; // 计算列
+		// 预警值设置
+		QHBoxLayout* warningLayout = new QHBoxLayout;
+		QLabel* warningLabel = new QLabel(QString("设置%1预警值（毫米）：").arg(settingLabels[i]), &dialog);
+		QLabel* greaterWarningLabel = new QLabel("大于", &dialog);
+		QLineEdit* greaterWarningInput = new QLineEdit(&dialog);
+		greaterWarningInput->setValidator(new QDoubleValidator(0, 10000, 2, greaterWarningInput));
+		QLabel* lessWarningLabel = new QLabel("或小于", &dialog);
+		QLineEdit* lessWarningInput = new QLineEdit(&dialog);
+		lessWarningInput->setValidator(new QDoubleValidator(0, 10000, 2, lessWarningInput));
+		warningLayout->addWidget(warningLabel);
+		warningLayout->addWidget(greaterWarningLabel);
+		warningLayout->addWidget(greaterWarningInput);
+		warningLayout->addWidget(lessWarningLabel);
+		warningLayout->addWidget(lessWarningInput);
+		gridLayout->addLayout(warningLayout, row + 2, 0, 1, 2);
 
-		QVBoxLayout *vLayout = new QVBoxLayout();
-		// 预警值标签
-		QLabel* warningLabel = new QLabel(warningLabels[i], &dialog);
-		warningLabel->setStyleSheet("QLabel { color: orange; font-weight: bold;}");
-		vLayout->addWidget(warningLabel);
-
-		// 上限区域
-		QHBoxLayout* upperLayout = new QHBoxLayout;
-		QLabel* upperLabel = new QLabel("上限区域：", &dialog);
-		QLineEdit* upperInput1 = new QLineEdit(&dialog);
-		upperInput1->setValidator(new QDoubleValidator(0, 10000, 2, upperInput1));
-
-		QLabel *separator1 = new QLabel(" 一 ", &dialog); // 分隔符
-		QLineEdit* upperInput2 = new QLineEdit(&dialog);
-		upperInput2->setValidator(new QDoubleValidator(0, 10000, 2, upperInput2));
-		upperLayout->addWidget(upperLabel);
-		upperLayout->addWidget(upperInput1);
-		upperLayout->addWidget(separator1); // 添加分隔符
-		upperLayout->addWidget(upperInput2);
-		vLayout->addLayout(upperLayout);
-
-
-		// 添加一个垂直空白控件作为上限区域和下限区域之间的间隔
-		vLayout->addItem(new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Fixed));
-
-		// 下限区域
-		QHBoxLayout* lowerLayout = new QHBoxLayout;
-		QLabel* lowerLabel = new QLabel("下限区域：", &dialog);
-		QLineEdit* lowerInput1 = new QLineEdit(&dialog);
-		lowerInput1->setValidator(new QDoubleValidator(0, 10000, 2, lowerInput1));
-
-		QLabel *separator2 = new QLabel(" 一 ", &dialog);
-		QLineEdit* lowerInput2 = new QLineEdit(&dialog);
-		lowerInput2->setValidator(new QDoubleValidator(0, 10000, 2, lowerInput2));
-		lowerLayout->addWidget(lowerLabel);
-		lowerLayout->addWidget(lowerInput1);
-		lowerLayout->addWidget(separator2);
-		lowerLayout->addWidget(lowerInput2);
-		vLayout->addLayout(lowerLayout);
-
-		// 告警值标签
-		QLabel* alarmLabel = new QLabel(alarmLabels[i], &dialog);
-		alarmLabel->setStyleSheet("QLabel { color: #A52A2A; font-weight: bold; }");
-		vLayout->addWidget(alarmLabel);
-
-		// 告警值区域
+		// 告警值设置
 		QHBoxLayout* alarmLayout = new QHBoxLayout;
-		QLabel* greaterLabel = new QLabel("大于", &dialog);
-		QLineEdit* greaterInput = new QLineEdit(&dialog);
-		greaterInput->setValidator(new QDoubleValidator(0, 10000, 2, greaterInput));
-		QLabel* lessLabel = new QLabel("或小于", &dialog);
-		QLineEdit* lessInput = new QLineEdit(&dialog);
-		lessInput->setValidator(new QDoubleValidator(0, 10000, 2, lessInput));
-		alarmLayout->addWidget(greaterLabel);
-		alarmLayout->addWidget(greaterInput);
-		alarmLayout->addWidget(lessLabel);
-		alarmLayout->addWidget(lessInput);
-		vLayout->addLayout(alarmLayout);
-
-		// 将垂直布局添加到网格布局的相应位置
-		gridLayout->addLayout(vLayout, row, col);
+		QLabel* alarmLabel = new QLabel(QString("设置%1告警值（毫米）：").arg(settingLabels[i]), &dialog);
+		QLabel* greaterAlarmLabel = new QLabel("大于", &dialog);
+		QLineEdit* greaterAlarmInput = new QLineEdit(&dialog);
+		greaterAlarmInput->setValidator(new QDoubleValidator(0, 10000, 2, greaterAlarmInput));
+		QLabel* lessAlarmLabel = new QLabel("或小于", &dialog);
+		QLineEdit* lessAlarmInput = new QLineEdit(&dialog);
+		lessAlarmInput->setValidator(new QDoubleValidator(0, 10000, 2, lessAlarmInput));
+		alarmLayout->addWidget(alarmLabel);
+		alarmLayout->addWidget(greaterAlarmLabel);
+		alarmLayout->addWidget(greaterAlarmInput);
+		alarmLayout->addWidget(lessAlarmLabel);
+		alarmLayout->addWidget(lessAlarmInput);
+		gridLayout->addLayout(alarmLayout, row + 3, 0, 1, 2);
 	}
 
 
-	// 设置网格布局的间距
-	gridLayout->setHorizontalSpacing(20); // 水平间距
-	gridLayout->setVerticalSpacing(10); // 垂直间距
+	// 设置网格布局的间距和边距
+	gridLayout->setHorizontalSpacing(20);
+	gridLayout->setVerticalSpacing(10);
+	gridLayout->setContentsMargins(20, 20, 20, 20);
 
 	// 设置对话框的样式
 	dialog.setStyleSheet("QDialog { background-color: #f0f0f0; }"
@@ -294,7 +279,7 @@ void ChartManager::onIntervalPBClicked() {
 	QObject::connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
 
 	// 将按钮布局添加到网格布局的下方
-	gridLayout->addLayout(buttonLayout, warningLabels.size() / 2 + 1, 0, 1, 2);
+	gridLayout->addLayout(buttonLayout, settingLabels.size() * 4, 0, 1, 2); // 调整行位置以适应新的布局
 
 	// 设置网格布局的间距和边距
 	gridLayout->setHorizontalSpacing(30); // 增加水平间距
