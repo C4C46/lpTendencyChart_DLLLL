@@ -2,8 +2,9 @@
 
 #pragma execution_character_set("utf-8")
 
-ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QStringList &curveNames)
-	: QObject(parent), m_widget(parentWidget), curveNames(curveNames)
+ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, 
+	const QStringList &curveNames, ConfigLoader* configLoader)
+	: QObject(parent), m_widget(parentWidget), curveNames(curveNames), m_configLoader(configLoader)
 {
 	plot = new QwtPlot(m_widget);
 	//plot->setTitle("实时趋势图");
@@ -180,13 +181,17 @@ void ChartManager::onIntervalPBClicked() {
 
 	QGridLayout *gridLayout = new QGridLayout();
 
-	QStringList settingLabels = {
-		"A/B面整体宽度",
-		"A/B面电浆宽度",
-		"A/B面左侧陶瓷宽度",
-		"A/B面右侧陶瓷宽度",
-		"A/B面对齐度"
-	};
+
+	// 通过ConfigLoader获取父类名字
+	QStringList settingLabels = m_configLoader->getParentCategoryNames();
+
+	//QStringList settingLabels = {
+	//	"A/B面整体宽度",
+	//	"A/B面电浆宽度",
+	//	"A/B面左侧陶瓷宽度",
+	//	"A/B面右侧陶瓷宽度",
+	//	"A/B面对齐度"
+	//};
 
 	// 对于每个设置项，我们需要创建不同的控件
 	for (int i = 0; i < settingLabels.size(); ++i) {

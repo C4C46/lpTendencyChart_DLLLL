@@ -33,6 +33,16 @@ QStringList ConfigLoader::getCurveNames() const {
 	return selectedCurveNames;
 }
 
+
+QStringList ConfigLoader::getParentCategoryNames() const {
+	QStringList parentNames;
+	for (int i = 0; i < m_treeWidget->topLevelItemCount(); ++i) {
+		QTreeWidgetItem *item = m_treeWidget->topLevelItem(i);
+		parentNames.append(item->text(1)); // 假设父类名字存储在第二列
+	}
+	return parentNames;
+}
+
 void ConfigLoader::loadConfig(const QString &filePath) {
 	QString readPath = QCoreApplication::applicationDirPath() + "/" + filePath;
 	QFile file(readPath);

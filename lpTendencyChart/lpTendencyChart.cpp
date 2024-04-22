@@ -27,7 +27,7 @@ void lpTendencyChart::init()
 
 
 	QStringList curveNames = configLoader->getCurveNames(); // 获取曲线名称
-	chartManager = new ChartManager(this, ui->Chartwidget, curveNames);
+	chartManager = new ChartManager(this, ui->Chartwidget, curveNames, configLoader);
 	chartManager->start();
 	connect(configLoader, &ConfigLoader::curveDisplayChanged, chartManager, &ChartManager::onCurveDisplayChanged);
 	

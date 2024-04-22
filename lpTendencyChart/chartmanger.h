@@ -30,7 +30,8 @@ class ChartManager : public QObject {
     Q_OBJECT
 
 public:
-    ChartManager(QObject *parent, QWidget*parentWidget, const QStringList &curveNames);
+    ChartManager(QObject *parent, QWidget*parentWidget, 
+		const QStringList &curveNames, ConfigLoader* configLoader);
 	~ChartManager();
     void start();
 	QWidget* getWidget();
@@ -54,6 +55,7 @@ private:
 	QWidget *m_widget; 
 	QwtPlot *plot; 
 	ChartUpdaterThread *updaterThread;
+	ConfigLoader *m_configLoader{nullptr};
 	QVector<QwtPlotCurve *> curves; // 支持多条曲线
 	QMap<QString, QVector<double>> xDataMap, yDataMap; // 存储每条曲线的数据
 	QStringList curveNames;
