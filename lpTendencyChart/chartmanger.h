@@ -21,8 +21,11 @@
 #include <qwt_legend.h>
 #include <qwt_legend_label.h>
 #include <QMouseEvent>
+#include <QHash>
 #include "ConfigLoader.h"
 #include "ChartUpdaterThread.h"
+
+
 class ChartManager : public QObject {
     Q_OBJECT
 
@@ -42,7 +45,7 @@ protected:
 public slots:
 	void onChartUpdate(const QString &curveName, int x, qreal y);
 	void onIntervalPBClicked();
-	void addCurve(const QString &curveName, const QColor &color); 
+	void addCurve(const QString &curveName); 
 	void onLegendClicked(const QVariant &itemInfo, int index);
 	void onCurveDisplayChanged(const QString &curveName, bool display); // 添加这个槽函数
 

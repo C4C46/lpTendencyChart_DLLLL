@@ -32,12 +32,12 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 
 	if (!curveNames.isEmpty())
 	{
-		//定义颜色生成步长
-		int colorStep = 360 / curveNames.size();
+		////定义颜色生成步长
+		//int colorStep = 360 / curveNames.size();
 		for (int i = 0; i < curveNames.size(); ++i)
 		{
-			QColor color = QColor::fromHsv((colorStep * i) % 360, 255, 180);
-			addCurve(curveNames[i], color);
+			//QColor color = QColor::fromHsv((colorStep * i) % 360, 255, 180);
+			addCurve(curveNames[i]);
 		}
 	}
 
@@ -323,8 +323,21 @@ void ChartManager::onIntervalPBClicked() {
 	}
 }
 
+QColor colorFromName(const QString &name) {
+	// 使用Qt的qHash函数生成一个基于字符串的哈希值
+	quint32 hashValue = qHash(name);
 
-void ChartManager::addCurve(const QString &curveName, const QColor &color) {
+	// 使用哈希值来生成颜色
+	int h = (hashValue % 360); // 色相值在0到359之间
+	int s = 200 + (hashValue % 55); // 饱和度在200到255之间
+	int v = 150 + (hashValue % 105); // 明度在150到255之间
+
+	return QColor::fromHsv(h, s, v);
+}
+
+
+
+void ChartManager::addCurve(const QString &curveName) {
 	QwtPlotCurve *curve = new QwtPlotCurve(curveName);
 	curve->setTitle(curveName); // 设置曲线的标题，这将在图例中显示
 		// 设置曲线标题的字体大小
@@ -334,6 +347,8 @@ void ChartManager::addCurve(const QString &curveName, const QColor &color) {
 	title.setFont(font);
 	curve->setTitle(title);
 
+
+	QColor color = colorFromName(curveName);
 	curve->setPen(color, 3); // 设置曲线颜色和宽度
 	curve->attach(plot);
 	curves.append(curve);
@@ -400,8 +415,8 @@ void ChartManager::onCurveDisplayChanged(const QString &curveName, bool display)
 
 		if (!curveExists) {
 			// 曲线不存在，创建新曲线
-			QColor color = QColor::fromHsv((curves.size() * 30) % 360, 255, 180); // 示例颜色
-			addCurve(curveName, color); // 假设这个方法已经实现
+			//QColor color = QColor::fromHsv((curves.size() * 30) % 360, 255, 180); // 示例颜色
+			addCurve(curveName); // 假设这个方法已经实现
 
 			// 更新ChartUpdaterThread中的曲线名称列表
 			QStringList updatedCurveNames;
