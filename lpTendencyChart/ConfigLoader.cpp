@@ -19,7 +19,18 @@ ConfigLoader::ConfigLoader(QTreeWidget *treeWidget, QObject *parent)
 }
 
 QStringList ConfigLoader::getCurveNames() const {
-	return curveNames;
+	QStringList selectedCurveNames;
+	for (int i = 0; i < m_treeWidget->topLevelItemCount(); ++i) {
+		QTreeWidgetItem *parentItem = m_treeWidget->topLevelItem(i);
+		for (int j = 0; j < parentItem->childCount(); ++j) {
+			QTreeWidgetItem *childItem = parentItem->child(j);
+			QCheckBox *checkBox = qobject_cast<QCheckBox *>(m_treeWidget->itemWidget(childItem, 0));
+			if (checkBox && checkBox->isChecked()) {
+				selectedCurveNames.append(childItem->text(1)); // 添加选中的子项名称
+			}
+		}
+	}
+	return selectedCurveNames;
 }
 
 void ConfigLoader::loadConfig(const QString &filePath) {
@@ -38,7 +49,6 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 	QJsonArray categoriesArray = jsonObject["categories"].toArray();
 
 	m_treeWidget->setColumnWidth(0, 35);
-
 	m_treeWidget->setColumnWidth(1, 180); // 为名称列设置更大的宽度
 
 	QFont font = m_treeWidget->font();
@@ -75,8 +85,25 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 
 			QCheckBox *checkBox = new QCheckBox();
 			checkBox->setChecked(display); // 根据配置文件设置复选框的状态
+			checkBox->setEnabled(selected); // 根据父项的选中状态启用或禁用复选框
 			m_treeWidget->setItemWidget(childItem, 0, checkBox); // 将复选框设置在左侧列
+
+			QObject::connect(checkBox, &QCheckBox::toggled, [this, childName](bool checked) {
+				emit curveDisplayChanged(childName, checked);
+			});
 		}
+
+		// 当单选按钮状态改变时，更新子复选框的可用状态
+		QObject::connect(radioButton, &QRadioButton::toggled, [this, parentItem](bool checked) {
+			for (int j = 0; j < parentItem->childCount(); ++j) {
+				QTreeWidgetItem *childItem = parentItem->child(j);
+				QCheckBox *checkBox = qobject_cast<QCheckBox *>(m_treeWidget->itemWidget(childItem, 0));
+				if (checkBox) {
+					checkBox->setEnabled(checked);
+					if (!checked) checkBox->setChecked(false); // 如果父项未选中，也取消子项的勾选状态
+				}
+			}
+		});
 		//// 如果父项被选中，则展开该项
 		//if (selected) {
 		//	m_treeWidget->expandItem(parentItem);
@@ -110,8 +137,8 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 			}
 		}
 
-		QString selectedCategory = curveNames.at(id);
-		emit curveDisplayChanged(selectedCategory, true);
+		//QString selectedCategory = curveNames.at(id);
+		//emit curveDisplayChanged(selectedCategory, true);
 	});
 }
 
