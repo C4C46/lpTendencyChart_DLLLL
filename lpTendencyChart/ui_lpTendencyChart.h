@@ -43,7 +43,7 @@ public:
     {
         if (lpTendencyClass->objectName().isEmpty())
             lpTendencyClass->setObjectName(QStringLiteral("lpTendencyClass"));
-        lpTendencyClass->resize(1029, 648);
+        lpTendencyClass->resize(1048, 648);
         gridLayout = new QGridLayout(lpTendencyClass);
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
@@ -54,6 +54,7 @@ public:
         treeWidget = new QTreeWidget(lpTendencyClass);
         treeWidget->setObjectName(QStringLiteral("treeWidget"));
         treeWidget->setMinimumSize(QSize(220, 0));
+        treeWidget->setMaximumSize(QSize(220, 16777215));
 
         horizontalLayout_3->addWidget(treeWidget);
 

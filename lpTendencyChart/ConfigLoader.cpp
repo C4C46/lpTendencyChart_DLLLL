@@ -166,7 +166,21 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 		}
 
 		// 当单选按钮状态改变时，更新子复选框的可用状态
-		QObject::connect(radioButton, &QRadioButton::toggled, [this, parentItem](bool checked) {
+		QObject::connect(radioButton, &QRadioButton::toggled, [this, parentItem, categoryObject](bool checked) {
+			if (checked) {
+				// 发出Y轴范围改变的信号
+				QVariantMap settingDefaults = getSettingDefaultValue(parentItem->text(1));
+				if (settingDefaults.contains("yAxisRange")) {
+					emit yAxisRangeChanged(settingDefaults["yAxisRange"].toList());
+				}
+				if (settingDefaults.contains("warningValue")) {
+					emit warningValueChanged(settingDefaults["warningValue"].toList());
+				}
+				if (settingDefaults.contains("alarmValue")) {
+					emit alarmValueChanged(settingDefaults["alarmValue"].toList());
+				}
+			}
+			
 			for (int j = 0; j < parentItem->childCount(); ++j) {
 				QTreeWidgetItem *childItem = parentItem->child(j);
 				QCheckBox *checkBox = qobject_cast<QCheckBox *>(m_treeWidget->itemWidget(childItem, 0));

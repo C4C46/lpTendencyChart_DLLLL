@@ -29,6 +29,10 @@ public:
 	QStringList getParentCategoryNames() const;
 signals:
 	void curveDisplayChanged(const QString &curveName, bool display);
+
+	void yAxisRangeChanged(const QVariantList &yAxisRange);
+	void warningValueChanged(const QVariantList &warningValue);
+	void alarmValueChanged(const QVariantList &alarmValue);
 private:
 	QTreeWidget *m_treeWidget;
 	QStringList curveNames; // 存储曲线名称

@@ -50,6 +50,12 @@ public slots:
 	void onLegendClicked(const QVariant &itemInfo, int index);
 	void onCurveDisplayChanged(const QString &curveName, bool display); // 添加这个槽函数
 
+	void updateYAxisRange(const QVariantList & yAxisRange);
+
+	void updateWarningValue(const QVariantList & warningValue);
+
+	void updateAlarmValue(const QVariantList & alarmValue);
+
 
 private:
 	QWidget *m_widget; 
@@ -67,5 +73,11 @@ private:
 
 	void resetCurvesOpacity(); // 添加成员变量存储曲线名称
 	void installEventFilters();//恢复所有曲线显示
+
+
+	double m_warningValueLower;
+	double m_warningValueUpper;
+	double m_alarmValueLower;
+	double m_alarmValueUpper;
 };
 

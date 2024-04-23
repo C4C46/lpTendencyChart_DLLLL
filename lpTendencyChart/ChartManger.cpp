@@ -87,6 +87,9 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget,
 	// 连接图例点击信号
 	connect(legend, SIGNAL(clicked(const QVariant &, int)), this, SLOT(onLegendClicked(const QVariant &, int)));
 
+	connect(m_configLoader, &ConfigLoader::yAxisRangeChanged, this, &ChartManager::updateYAxisRange);
+	connect(m_configLoader, &ConfigLoader::warningValueChanged, this, &ChartManager::updateWarningValue);
+	connect(m_configLoader, &ConfigLoader::alarmValueChanged, this, &ChartManager::updateAlarmValue);
 	installEventFilters();
 
 	//plot->replot(); // 重绘图表以应用新的轴间隔
@@ -117,6 +120,7 @@ QWidget* ChartManager::getWidget() {
 }
 
 
+
 void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
 
 
@@ -138,14 +142,14 @@ void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
 	double xMin = xIntervalIndex * xInterval;
 	double xMax = xMin + xInterval;
 
-	// Y轴区间计算
-	int yIntervalIndex = y / yInterval; // 计算当前数据点属于哪个间隔区间
-	double yMin = yIntervalIndex * yInterval;
-	double yMax = yMin + yInterval;
+	//// Y轴区间计算
+	//int yIntervalIndex = y / yInterval; // 计算当前数据点属于哪个间隔区间
+	//double yMin = yIntervalIndex * yInterval;
+	//double yMax = yMin + yInterval;
 
 	// 更新X轴和Y轴的范围
 	plot->setAxisScale(QwtPlot::xBottom, xMin, xMax);
-	plot->setAxisScale(QwtPlot::yLeft, yMin, yMax);
+	//plot->setAxisScale(QwtPlot::yLeft, yMin, yMax);
 
 	plot->replot(); // 重绘图表
 
@@ -169,6 +173,20 @@ void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
 			table->setItem(newRow, i, new QTableWidgetItem("NaN")); // 填充空白以保持表格整齐
 		}
 	}
+
+	QColor cellColor = Qt::white; // Default color
+	if (y > m_warningValueLower || y < m_warningValueUpper) {
+		cellColor = QColor("orange");
+	}
+	if (y > m_alarmValueLower || y < m_alarmValueUpper) {
+		cellColor = QColor("red");
+	}
+
+	// Set the color for the newly added table item
+	QTableWidgetItem *item = new QTableWidgetItem(QString::number(y));
+	item->setBackground(cellColor);
+	table->setItem(newRow, columnIndex, item);
+
 
 	table->scrollToBottom();
 }
@@ -471,6 +489,35 @@ void ChartManager::onCurveDisplayChanged(const QString &curveName, bool display)
 			curveNames.removeAll(curveName); // 从曲线名称列表中移除
 		}
 	}
+	// 重新设置表格列宽
+	table->setColumnWidth(0, 100); // 第一列宽度设置为100
+	for (int i = 1; i < table->columnCount(); ++i) {
+		table->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+	}
 
 	plot->replot(); // 重绘图表
+}
+
+
+void ChartManager::updateYAxisRange(const QVariantList &yAxisRange) {
+	if (yAxisRange.size() == 2) {
+		double minY = yAxisRange[0].toDouble();
+		double maxY = yAxisRange[1].toDouble();
+		plot->setAxisScale(QwtPlot::yLeft, minY, maxY);
+		plot->replot();
+	}
+}
+
+void ChartManager::updateWarningValue(const QVariantList &warningValue) {
+	if (warningValue.size() == 2) {
+		m_warningValueLower = warningValue[0].toDouble();
+		m_warningValueUpper = warningValue[1].toDouble();
+	}
+}
+
+void ChartManager::updateAlarmValue(const QVariantList &alarmValue) {
+	if (alarmValue.size() == 2) {
+		m_alarmValueLower = alarmValue[0].toDouble();
+		m_alarmValueUpper = alarmValue[1].toDouble();
+	}
 }
