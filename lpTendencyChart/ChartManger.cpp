@@ -137,19 +137,29 @@ void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
 			break;
 		}
 	}
-		// 确定当前数据点所在的X轴区间
-	int xIntervalIndex = x / xInterval; // 计算当前数据点属于哪个间隔区间
-	double xMin = xIntervalIndex * xInterval;
-	double xMax = xMin + xInterval;
+	//	// 确定当前数据点所在的X轴区间
+	//int xIntervalIndex = x / xInterval; // 计算当前数据点属于哪个间隔区间
+	//double xMin = xIntervalIndex * xInterval;
+	//double xMax = xMin + xInterval;
 
-	//// Y轴区间计算
-	//int yIntervalIndex = y / yInterval; // 计算当前数据点属于哪个间隔区间
-	//double yMin = yIntervalIndex * yInterval;
-	//double yMax = yMin + yInterval;
+	////// Y轴区间计算
+	////int yIntervalIndex = y / yInterval; // 计算当前数据点属于哪个间隔区间
+	////double yMin = yIntervalIndex * yInterval;
+	////double yMax = yMin + yInterval;
 
-	// 更新X轴和Y轴的范围
-	plot->setAxisScale(QwtPlot::xBottom, xMin, xMax);
-	//plot->setAxisScale(QwtPlot::yLeft, yMin, yMax);
+	//// 更新X轴和Y轴的范围
+	//plot->setAxisScale(QwtPlot::xBottom, xMin, xMax);
+	////plot->setAxisScale(QwtPlot::yLeft, yMin, yMax);
+	if (!isViewingHistory) {
+		xInterval = 50; // 这里设置x轴的间隔值，根据实际情况调整
+		int xMaxCurrent = plot->axisScaleDiv(QwtPlot::xBottom).upperBound(); // 获取当前x轴的最大值
+		if (x >= xMaxCurrent) {
+			int xMinNew = ((x / xInterval) * xInterval);
+			int xMaxNew = xMinNew + xInterval;
+			plot->setAxisScale(QwtPlot::xBottom, xMinNew, xMaxNew);
+		}
+	}
+
 
 	plot->replot(); // 重绘图表
 
@@ -419,15 +429,49 @@ void ChartManager::installEventFilters() {
 }
 
 bool ChartManager::eventFilter(QObject *watched, QEvent *event) {
-	if (watched == plot->canvas() && event->type() == QEvent::MouseButtonPress) {
-		QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-		if (mouseEvent->button() == Qt::LeftButton) {
-			resetCurvesOpacity();
-			plot->replot();
-			return true; // 表示事件已处理
+	if (watched == plot->canvas()) {
+		switch (event->type()) {
+		case QEvent::MouseButtonPress: {
+			QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+			if (mouseEvent->button() == Qt::LeftButton) {
+				dragStartPosition = mouseEvent->pos();
+				xMinCurrent = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+				xMaxCurrent = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+				isDragging = true;
+				//isViewingHistory = true; // 开始查看历史
+				return true;
+			}
+			else if (mouseEvent->button() == Qt::RightButton) {
+				// 当用户右键点击时，退出历史查看模式
+				isViewingHistory = false;
+			}
+			break;
+		}
+		case QEvent::MouseMove: {
+			if (isDragging) {
+				QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+				int dx = mouseEvent->pos().x() - dragStartPosition.x();
+				isViewingHistory = true;
+				double shift = (xMaxCurrent - xMinCurrent) * dx / plot->canvas()->width();
+				plot->setAxisScale(QwtPlot::xBottom, xMinCurrent - shift, xMaxCurrent - shift);
+				plot->replot();
+				return true;
+			}
+			break;
+		}
+		case QEvent::MouseButtonRelease: {
+			if (isDragging) {
+				isDragging = false;
+				//isViewingHistory = false; // 结束查看历史
+				return true;
+			}
+			break;
+		}
+		default:
+			break;
 		}
 	}
-	return QObject::eventFilter(watched, event); // 对于其他事件，调用基类的事件过滤器方法
+	return QObject::eventFilter(watched, event);
 }
 
 

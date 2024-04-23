@@ -65,8 +65,9 @@ private:
 	QVector<QwtPlotCurve *> curves; // 支持多条曲线
 	QMap<QString, QVector<double>> xDataMap, yDataMap; // 存储每条曲线的数据
 	QStringList curveNames;
+
 	double xInterval = 10; // 默认x间隔值
-	double yInterval = 10; // 默认y间隔值
+	//double yInterval = 10; // 默认y间隔值
 	QTableWidget *table; // 添加表格成员变量
 
 	bool autoScrollEnabled = true; // 默认启用自动滚动
@@ -79,5 +80,11 @@ private:
 	double m_warningValueUpper;
 	double m_alarmValueLower;
 	double m_alarmValueUpper;
+
+	QPoint dragStartPosition; // 用于跟踪拖动开始时的鼠标位置
+	double xMinCurrent, xMaxCurrent; // 用于跟踪当前图表的X轴范围
+	bool isDragging = false; // 标记是否正在拖动
+	bool isViewingHistory = false;
+
 };
 
