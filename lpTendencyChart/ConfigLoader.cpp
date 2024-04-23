@@ -34,13 +34,70 @@ QStringList ConfigLoader::getCurveNames() const {
 }
 
 
+
 QStringList ConfigLoader::getParentCategoryNames() const {
 	QStringList parentNames;
-	for (int i = 0; i < m_treeWidget->topLevelItemCount(); ++i) {
-		QTreeWidgetItem *item = m_treeWidget->topLevelItem(i);
-		parentNames.append(item->text(1)); // 假设父类名字存储在第二列
+
+	if (configDoc.isNull() || !configDoc.isObject()) {
+		return parentNames;
 	}
+
+	QJsonObject rootObj = configDoc.object();
+	QJsonArray categories = rootObj["categories"].toArray();
+
+	for (const QJsonValue& categoryVal : categories) {
+		QJsonObject categoryObj = categoryVal.toObject();
+		QString categoryName = categoryObj["name"].toString();
+		// 添加父类名称到列表中
+		parentNames.append(categoryName);
+	}
+
 	return parentNames;
+}
+
+
+QVariantMap ConfigLoader::getSettingDefaultValue(const QString& settingName) {
+	QVariantMap settingDefaults;
+
+
+	if (configDoc.isNull() || !configDoc.isObject()) {
+		return settingDefaults;
+	}
+
+	QJsonObject rootObj = configDoc.object();
+	QJsonArray categories = rootObj["categories"].toArray();
+
+	for (const QJsonValue& categoryVal : categories) {
+		QJsonObject categoryObj = categoryVal.toObject();
+		QString categoryName = categoryObj["name"].toString();
+
+
+		if (categoryName == settingName) {
+			qDebug() << "Object:" << categoryObj;
+			// 找到了匹配的设置项，读取其默认值
+			if (categoryObj.contains("settings")) {
+				QJsonObject settingsObj = categoryObj["settings"].toObject();
+				// 从settingsObj中读取yAxisRange
+				if (settingsObj.contains("yAxisRange")) {
+					QJsonArray yAxisRange = settingsObj["yAxisRange"].toArray();
+					settingDefaults["yAxisRange"] = QVariantList{ yAxisRange.at(0).toDouble(), yAxisRange.at(1).toDouble() };
+				}
+				// 从settingsObj中读取warningValue
+				if (settingsObj.contains("warningValue")) {
+					QJsonArray warningValue = settingsObj["warningValue"].toArray();
+					settingDefaults["warningValue"] = QVariantList{ warningValue.at(0).toDouble(), warningValue.at(1).toDouble() };
+				}
+				// 从settingsObj中读取alarmValue
+				if (settingsObj.contains("alarmValue")) {
+					QJsonArray alarmValue = settingsObj["alarmValue"].toArray();
+					settingDefaults["alarmValue"] = QVariantList{ alarmValue.at(0).toDouble(), alarmValue.at(1).toDouble() };
+				}
+			}
+			break; // 找到后退出循环
+		}
+	}
+
+	return settingDefaults;
 }
 
 void ConfigLoader::loadConfig(const QString &filePath) {
@@ -54,6 +111,11 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 
 	if (doc.isNull() || !doc.isObject())
 		return;
+
+	configDoc = doc;
+
+	// 打印整个文档以验证其内容
+	qDebug() << "Config loaded:" << configDoc.toJson(QJsonDocument::Compact);
 
 	QJsonObject jsonObject = doc.object();
 	QJsonArray categoriesArray = jsonObject["categories"].toArray();
@@ -172,6 +234,21 @@ void ConfigLoader::saveConfig(const QString &filePath)
 
 		QRadioButton *radioButton = qobject_cast<QRadioButton *>(m_treeWidget->itemWidget(parentItem, 0));
 		categoryObject["selected"] = radioButton && radioButton->isChecked(); // 检查单选按钮是否被选中
+
+		QVariantMap settingDefaults = getSettingDefaultValue(parentItem->text(1));
+		QJsonObject settingsObject; // 创建一个新的JSON对象来存储设置
+		if (!settingDefaults.isEmpty()) {
+			if (settingDefaults.contains("yAxisRange")) {
+				settingsObject["yAxisRange"] = QJsonArray::fromVariantList(settingDefaults["yAxisRange"].toList());
+			}
+			if (settingDefaults.contains("warningValue")) {
+				settingsObject["warningValue"] = QJsonArray::fromVariantList(settingDefaults["warningValue"].toList());
+			}
+			if (settingDefaults.contains("alarmValue")) {
+				settingsObject["alarmValue"] = QJsonArray::fromVariantList(settingDefaults["alarmValue"].toList());
+			}
+		}
+		categoryObject["settings"] = settingsObject; // 将设置对象添加到类别对象中
 
 		QJsonArray childrenArray;
 		for (int j = 0; j < parentItem->childCount(); ++j) {

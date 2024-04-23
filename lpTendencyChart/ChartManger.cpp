@@ -196,7 +196,10 @@ void ChartManager::onIntervalPBClicked() {
 	// 对于每个设置项，我们需要创建不同的控件
 	for (int i = 0; i < settingLabels.size(); ++i) {
 		int row = i * 4; // 每个设置占用4行
+		QString settingName = settingLabels[i];
 
+		// 从配置加载器获取默认值
+		QVariantMap settingDefaults = m_configLoader->getSettingDefaultValue(settingName);
 		// 设置标签
 		QLabel* settingLabel = new QLabel(settingLabels[i], &dialog);
 		settingLabel->setStyleSheet("QLabel { font-weight: bold; }");
@@ -210,6 +213,12 @@ void ChartManager::onIntervalPBClicked() {
 		QLabel *separator = new QLabel(" --- ", &dialog);
 		QLineEdit* rangeInput2 = new QLineEdit(&dialog);
 		rangeInput2->setValidator(new QDoubleValidator(0, 10000, 2, rangeInput2));
+		QVariantList yAxisRange = settingDefaults["yAxisRange"].toList();
+		if (!yAxisRange.isEmpty()) {
+			rangeInput1->setText(QString::number(yAxisRange[0].toDouble(), 'f', 2));
+			rangeInput2->setText(QString::number(yAxisRange[1].toDouble(), 'f', 2));
+		}
+
 		rangeLayout->addWidget(rangeLabel);
 		rangeLayout->addWidget(rangeInput1);
 		rangeLayout->addWidget(separator);
@@ -225,6 +234,12 @@ void ChartManager::onIntervalPBClicked() {
 		QLabel* lessWarningLabel = new QLabel("或小于", &dialog);
 		QLineEdit* lessWarningInput = new QLineEdit(&dialog);
 		lessWarningInput->setValidator(new QDoubleValidator(0, 10000, 2, lessWarningInput));
+		QVariantList warningValue = settingDefaults["warningValue"].toList();
+		if (!warningValue.isEmpty()) {
+			greaterWarningInput->setText(QString::number(warningValue[0].toDouble(), 'f', 2));
+			lessWarningInput->setText(QString::number(warningValue[1].toDouble(), 'f', 2));
+		}
+
 		warningLayout->addWidget(warningLabel);
 		warningLayout->addWidget(greaterWarningLabel);
 		warningLayout->addWidget(greaterWarningInput);
@@ -241,6 +256,12 @@ void ChartManager::onIntervalPBClicked() {
 		QLabel* lessAlarmLabel = new QLabel("或小于", &dialog);
 		QLineEdit* lessAlarmInput = new QLineEdit(&dialog);
 		lessAlarmInput->setValidator(new QDoubleValidator(0, 10000, 2, lessAlarmInput));
+
+		QVariantList alarmValue = settingDefaults["alarmValue"].toList();
+		if (!alarmValue.isEmpty()) {
+			greaterAlarmInput->setText(QString::number(alarmValue[0].toDouble(), 'f', 2));
+			lessAlarmInput->setText(QString::number(alarmValue[1].toDouble(), 'f', 2)); // 更正此处
+		}
 		alarmLayout->addWidget(alarmLabel);
 		alarmLayout->addWidget(greaterAlarmLabel);
 		alarmLayout->addWidget(greaterAlarmInput);
