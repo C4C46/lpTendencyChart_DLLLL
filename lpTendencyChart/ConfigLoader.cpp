@@ -286,3 +286,19 @@ void ConfigLoader::saveConfig(const QString &filePath)
 	file.write(doc.toJson());
 	file.close();
 }
+
+QString ConfigLoader::getSelectedParentNames() const {
+
+	for (int i = 0; i < m_treeWidget->topLevelItemCount(); ++i)
+	{
+		QTreeWidgetItem *item = m_treeWidget->topLevelItem(i);
+		QRadioButton *radioButton = qobject_cast<QRadioButton *>(m_treeWidget->itemWidget(item, 0));
+		if (radioButton && radioButton->isChecked())
+		{
+			return item->text(1);//返回選擇的父類名稱
+		}
+	}
+
+	return QString();
+
+}

@@ -24,6 +24,7 @@ public:
 	QVariantMap getSettingDefaultValue(const QString & settingName);
 	void loadConfig(const QString &filePath);
 	void saveConfig(const QString &filePath); // 添加保存配置的声明
+	QString getSelectedParentNames() const;
 	QStringList getCurveNames() const; // 新增方法
 
 	QStringList getParentCategoryNames() const;

@@ -16,9 +16,25 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget,
 	// 设置X轴和Y轴的标题
 	plot->setAxisTitle(QwtPlot::xBottom,"");
 	plot->setAxisTitle(QwtPlot::yLeft,"");
+
+	QString selectedParentNames = m_configLoader->getSelectedParentNames();
+	if (!selectedParentNames.isEmpty())
+	{
+		QVariantMap settingDefaults = m_configLoader->getSettingDefaultValue(selectedParentNames);
+		if (settingDefaults.contains("yAxisRange"))
+		{
+			QVariantList yAxisRange = settingDefaults["yAxisRange"].toList();
+			if (yAxisRange.size() == 2) {
+				double minY = yAxisRange[0].toDouble();
+				double maxY = yAxisRange[1].toDouble();
+				plot->setAxisScale(QwtPlot::yLeft, minY, maxY);
+			}
+		}
+		plot->replot();
+	}
 	// 设置X轴和Y轴的初始范围
 	plot->setAxisScale(QwtPlot::xBottom, 0, 50); // 设置X轴的范围为0-50
-	plot->setAxisScale(QwtPlot::yLeft, 0, 900); // 设置Y轴的范围为0-900
+	//plot->setAxisScale(QwtPlot::yLeft, 0, 900); // 设置Y轴的范围为0-900
 
 
 	plot->setCanvasBackground(QColor(14,22,55));
@@ -51,27 +67,6 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget,
 		// 使用QSplitter代替原来的布局
 		QSplitter *splitter = new QSplitter(Qt::Vertical, m_widget);
 		splitter->addWidget(plot);
-
-
-		table = new QTableWidget(m_widget);
-		table->setRowCount(0); // 初始时没有行
-		table->setColumnCount(curveNames.size() + 1); // 列数根据曲线数量设置
-		QStringList headers = { "位置(m)" };
-		headers.append(curveNames);
-		table->setHorizontalHeaderLabels(headers);
-		//table->setHorizontalHeaderLabels(curveNames); // 使用曲线名称作为列标题
-		table->horizontalHeader()->setStretchLastSection(true);
-		table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-		table->setColumnWidth(0, 100);
-		table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
-
-		for (int i = 1; i < table->columnCount(); ++i) {
-			table->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
-		}
-		table->verticalHeader()->setVisible(false);
-		splitter->addWidget(table);
-
 		QVBoxLayout *layout = new QVBoxLayout(m_widget);
 		layout->addWidget(splitter);
 		m_widget->setLayout(layout);
@@ -164,41 +159,41 @@ void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
 	plot->replot(); // 重绘图表
 
 
-	// 检查是否需要添加新行
-	int newRow = table->rowCount();
-	table->insertRow(newRow); // 插入新行
-	  // 在第一列设置x坐标
-	table->setItem(newRow, 0, new QTableWidgetItem(QString::number(x)));
+	//// 检查是否需要添加新行
+	//int newRow = table->rowCount();
+	//table->insertRow(newRow); // 插入新行
+	//  // 在第一列设置x坐标
+	//table->setItem(newRow, 0, new QTableWidgetItem(QString::number(x)));
 
-	// 确定曲线名称对应的列索引（加1因为第一列是x坐标）
-	int columnIndex = curveNames.indexOf(curveName) + 1;
-	if (columnIndex == 0) return; // 如果找不到对应的曲线名称，直接返回
+	//// 确定曲线名称对应的列索引（加1因为第一列是x坐标）
+	//int columnIndex = curveNames.indexOf(curveName) + 1;
+	//if (columnIndex == 0) return; // 如果找不到对应的曲线名称，直接返回
 
-	// 在对应的列下添加y值
-	table->setItem(newRow, columnIndex, new QTableWidgetItem(QString::number(y)));
+	//// 在对应的列下添加y值
+	//table->setItem(newRow, columnIndex, new QTableWidgetItem(QString::number(y)));
 
-	// 按照曲线更新数据，可能需要填充其他列的空白单元格
-	for (int i = 0; i < table->columnCount(); ++i) {
-		if (i != columnIndex && !table->item(newRow, i)) {
-			table->setItem(newRow, i, new QTableWidgetItem("NaN")); // 填充空白以保持表格整齐
-		}
-	}
+	//// 按照曲线更新数据，可能需要填充其他列的空白单元格
+	//for (int i = 0; i < table->columnCount(); ++i) {
+	//	if (i != columnIndex && !table->item(newRow, i)) {
+	//		table->setItem(newRow, i, new QTableWidgetItem("NaN")); // 填充空白以保持表格整齐
+	//	}
+	//}
 
-	QColor cellColor = Qt::white; // Default color
-	if (y > m_warningValueLower || y < m_warningValueUpper) {
-		cellColor = QColor("orange");
-	}
-	if (y > m_alarmValueLower || y < m_alarmValueUpper) {
-		cellColor = QColor("red");
-	}
+	//QColor cellColor = Qt::white; // Default color
+	//if (y > m_warningValueLower || y < m_warningValueUpper) {
+	//	cellColor = QColor("orange");
+	//}
+	//if (y > m_alarmValueLower || y < m_alarmValueUpper) {
+	//	cellColor = QColor("red");
+	//}
 
-	// Set the color for the newly added table item
-	QTableWidgetItem *item = new QTableWidgetItem(QString::number(y));
-	item->setBackground(cellColor);
-	table->setItem(newRow, columnIndex, item);
+	//// Set the color for the newly added table item
+	//QTableWidgetItem *item = new QTableWidgetItem(QString::number(y));
+	//item->setBackground(cellColor);
+	//table->setItem(newRow, columnIndex, item);
 
 
-	table->scrollToBottom();
+	//table->scrollToBottom();
 }
 
 void ChartManager::onIntervalPBClicked() {
@@ -438,6 +433,9 @@ bool ChartManager::eventFilter(QObject *watched, QEvent *event) {
 				xMinCurrent = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
 				xMaxCurrent = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
 				isDragging = true;
+
+				resetCurvesOpacity();
+				plot->replot(); // 重绘图表以应用更改
 				//isViewingHistory = true; // 开始查看历史
 				return true;
 			}
@@ -498,17 +496,8 @@ void ChartManager::onCurveDisplayChanged(const QString &curveName, bool display)
 			}
 			updaterThread->updateCurveNames(updatedCurveNames);
 
-			// 添加曲线名称到curveNames列表，用于表格列的同步
+			// 添加曲线名称到curveNames列表，用于其他同步操作
 			curveNames.append(curveName);
-
-			// 添加列到表格
-			int newColumnIndex = table->columnCount();
-			table->insertColumn(newColumnIndex);
-			table->setHorizontalHeaderItem(newColumnIndex, new QTableWidgetItem(curveName));
-			// 为已有行的新列填充默认值
-			for (int row = 0; row < table->rowCount(); ++row) {
-				table->setItem(row, newColumnIndex, new QTableWidgetItem("NaN"));
-			}
 		}
 	}
 	else {
@@ -527,20 +516,12 @@ void ChartManager::onCurveDisplayChanged(const QString &curveName, bool display)
 			updatedCurveNames.append(curve->title().text());
 		}
 		updaterThread->updateCurveNames(updatedCurveNames);
-		int columnIndex = curveNames.indexOf(curveName) + 1; // +1 因为第一列是固定的“位置(m)”
-		if (columnIndex > 0) {
-			table->removeColumn(columnIndex);
-			curveNames.removeAll(curveName); // 从曲线名称列表中移除
-		}
-	}
-	// 重新设置表格列宽
-	table->setColumnWidth(0, 100); // 第一列宽度设置为100
-	for (int i = 1; i < table->columnCount(); ++i) {
-		table->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+		curveNames.removeAll(curveName); // 从曲线名称列表中移除
 	}
 
 	plot->replot(); // 重绘图表
 }
+
 
 
 void ChartManager::updateYAxisRange(const QVariantList &yAxisRange) {

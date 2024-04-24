@@ -18,6 +18,8 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QSplitter>
+#include <QtWidgets/QTableWidget>
 #include <QtWidgets/QTreeWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
@@ -27,6 +29,9 @@ QT_BEGIN_NAMESPACE
 class Ui_lpTendencyClass
 {
 public:
+    QGridLayout *gridLayout_3;
+    QSplitter *splitter;
+    QWidget *Top_widget;
     QGridLayout *gridLayout;
     QHBoxLayout *horizontalLayout_3;
     QTreeWidget *treeWidget;
@@ -38,20 +43,35 @@ public:
     QHBoxLayout *horizontalLayout_2;
     QSpacerItem *horizontalSpacer_2;
     QPushButton *Toggle_PB;
+    QWidget *Down_widget;
+    QGridLayout *gridLayout_2;
+    QTableWidget *tableWidget;
 
     void setupUi(QWidget *lpTendencyClass)
     {
         if (lpTendencyClass->objectName().isEmpty())
             lpTendencyClass->setObjectName(QStringLiteral("lpTendencyClass"));
-        lpTendencyClass->resize(1048, 648);
-        gridLayout = new QGridLayout(lpTendencyClass);
+        lpTendencyClass->resize(1173, 852);
+        gridLayout_3 = new QGridLayout(lpTendencyClass);
+        gridLayout_3->setSpacing(6);
+        gridLayout_3->setContentsMargins(11, 11, 11, 11);
+        gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
+        splitter = new QSplitter(lpTendencyClass);
+        splitter->setObjectName(QStringLiteral("splitter"));
+        splitter->setOrientation(Qt::Vertical);
+        Top_widget = new QWidget(splitter);
+        Top_widget->setObjectName(QStringLiteral("Top_widget"));
+        gridLayout = new QGridLayout(Top_widget);
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setSpacing(6);
         horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
-        treeWidget = new QTreeWidget(lpTendencyClass);
+        treeWidget = new QTreeWidget(Top_widget);
+        QTreeWidgetItem *__qtreewidgetitem = new QTreeWidgetItem();
+        __qtreewidgetitem->setText(0, QStringLiteral("1"));
+        treeWidget->setHeaderItem(__qtreewidgetitem);
         treeWidget->setObjectName(QStringLiteral("treeWidget"));
         treeWidget->setMinimumSize(QSize(220, 0));
         treeWidget->setMaximumSize(QSize(220, 16777215));
@@ -68,7 +88,7 @@ public:
 
         horizontalLayout->addItem(horizontalSpacer);
 
-        Interval_PB = new QPushButton(lpTendencyClass);
+        Interval_PB = new QPushButton(Top_widget);
         Interval_PB->setObjectName(QStringLiteral("Interval_PB"));
 
         horizontalLayout->addWidget(Interval_PB);
@@ -76,9 +96,9 @@ public:
 
         verticalLayout->addLayout(horizontalLayout);
 
-        Chartwidget = new QWidget(lpTendencyClass);
+        Chartwidget = new QWidget(Top_widget);
         Chartwidget->setObjectName(QStringLiteral("Chartwidget"));
-        Chartwidget->setMinimumSize(QSize(800, 550));
+        Chartwidget->setMinimumSize(QSize(0, 0));
         Chartwidget->setSizeIncrement(QSize(8, 0));
 
         verticalLayout->addWidget(Chartwidget);
@@ -90,7 +110,7 @@ public:
 
         horizontalLayout_2->addItem(horizontalSpacer_2);
 
-        Toggle_PB = new QPushButton(lpTendencyClass);
+        Toggle_PB = new QPushButton(Top_widget);
         Toggle_PB->setObjectName(QStringLiteral("Toggle_PB"));
 
         horizontalLayout_2->addWidget(Toggle_PB);
@@ -103,6 +123,22 @@ public:
 
 
         gridLayout->addLayout(horizontalLayout_3, 0, 0, 1, 1);
+
+        splitter->addWidget(Top_widget);
+        Down_widget = new QWidget(splitter);
+        Down_widget->setObjectName(QStringLiteral("Down_widget"));
+        gridLayout_2 = new QGridLayout(Down_widget);
+        gridLayout_2->setSpacing(6);
+        gridLayout_2->setContentsMargins(11, 11, 11, 11);
+        gridLayout_2->setObjectName(QStringLiteral("gridLayout_2"));
+        tableWidget = new QTableWidget(Down_widget);
+        tableWidget->setObjectName(QStringLiteral("tableWidget"));
+
+        gridLayout_2->addWidget(tableWidget, 0, 0, 1, 1);
+
+        splitter->addWidget(Down_widget);
+
+        gridLayout_3->addWidget(splitter, 0, 0, 1, 1);
 
 
         retranslateUi(lpTendencyClass);
