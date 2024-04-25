@@ -33,7 +33,30 @@ QStringList ConfigLoader::getCurveNames() const {
 	return selectedCurveNames;
 }
 
+QString ConfigLoader::getParentNameForCurve(const QString& curveName) const {
+	if (configDoc.isNull() || !configDoc.isObject()) {
+		return QString();
+	}
 
+	QJsonObject rootObj = configDoc.object();
+	QJsonArray categories = rootObj["categories"].toArray();
+
+	for (const QJsonValue& categoryVal : categories) {
+		QJsonObject categoryObj = categoryVal.toObject();
+		QString parentName = categoryObj["name"].toString();
+		QJsonArray children = categoryObj["children"].toArray();
+
+		for (const QJsonValue& childVal : children) {
+			QJsonObject childObj = childVal.toObject();
+			QString childName = childObj["name"].toString();
+			if (childName == curveName) {
+				return parentName; // 返回匹配曲线名称的父类名称
+			}
+		}
+	}
+
+	return QString(); // 如果没有找到匹配项，返回空字符串
+}
 
 QStringList ConfigLoader::getParentCategoryNames() const {
 	QStringList parentNames;
@@ -55,6 +78,18 @@ QStringList ConfigLoader::getParentCategoryNames() const {
 	return parentNames;
 }
 
+QStringList ConfigLoader::getAllCurveNames() const {
+	QStringList allCurveNames;
+	for (int i = 0; i < m_treeWidget->topLevelItemCount(); ++i) {
+		QTreeWidgetItem *parentItem = m_treeWidget->topLevelItem(i);
+		for (int j = 0; j < parentItem->childCount(); ++j) {
+			QTreeWidgetItem *childItem = parentItem->child(j);
+			allCurveNames.append(childItem->text(1)); // 添加所有子项名称
+		}
+	}
+	return allCurveNames;
+}
+
 
 QVariantMap ConfigLoader::getSettingDefaultValue(const QString& settingName) {
 	QVariantMap settingDefaults;
@@ -73,7 +108,7 @@ QVariantMap ConfigLoader::getSettingDefaultValue(const QString& settingName) {
 
 
 		if (categoryName == settingName) {
-			qDebug() << "Object:" << categoryObj;
+			//qDebug() << "Object:" << categoryObj;
 			// 找到了匹配的设置项，读取其默认值
 			if (categoryObj.contains("settings")) {
 				QJsonObject settingsObj = categoryObj["settings"].toObject();

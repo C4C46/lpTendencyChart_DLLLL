@@ -30,11 +30,13 @@ class ChartManager : public QObject {
     Q_OBJECT
 
 public:
-    ChartManager(QObject *parent, QWidget*parentWidget, 
-		const QStringList &curveNames, ConfigLoader* configLoader);
+	ChartManager(QObject *parent, QWidget *parentWidget, const QStringList &curveNames,
+		ConfigLoader* configLoader, ChartUpdaterThread* updaterThread);
 	~ChartManager();
     void start();
 	QWidget* getWidget();
+
+	double adjustXValue(double originalX);
 
 	QwtPlot* GetPlot() const { return plot;}
 	QTableWidget* GetTable() const { return table;}

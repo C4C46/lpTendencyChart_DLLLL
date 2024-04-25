@@ -26,8 +26,10 @@ public:
 	void saveConfig(const QString &filePath); // 添加保存配置的声明
 	QString getSelectedParentNames() const;
 	QStringList getCurveNames() const; // 新增方法
+	QString getParentNameForCurve(const QString & curveName) const;//子类所属父类
 
 	QStringList getParentCategoryNames() const;
+	QStringList getAllCurveNames() const;
 signals:
 	void curveDisplayChanged(const QString &curveName, bool display);
 

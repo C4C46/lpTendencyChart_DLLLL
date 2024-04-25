@@ -2,9 +2,10 @@
 
 #pragma execution_character_set("utf-8")
 
-ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, 
-	const QStringList &curveNames, ConfigLoader* configLoader)
-	: QObject(parent), m_widget(parentWidget), curveNames(curveNames), m_configLoader(configLoader)
+ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QStringList &curveNames,
+	ConfigLoader* configLoader, ChartUpdaterThread* updaterThread)
+	: QObject(parent), m_widget(parentWidget), curveNames(curveNames),
+	m_configLoader(configLoader), updaterThread(updaterThread)
 {
 	plot = new QwtPlot(m_widget);
 	//plot->setTitle("实时趋势图");
@@ -49,7 +50,7 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget,
 	grid->setVisible(false); // 隐藏网格线
 
 
-	updaterThread = new ChartUpdaterThread(this, curveNames);
+	//updaterThread = new ChartUpdaterThread(this, curveNames);
 
 	if (!curveNames.isEmpty())
 	{
@@ -94,12 +95,12 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget,
 
 
 ChartManager::~ChartManager() {
-	if (updaterThread) {
-		updaterThread->stopRunning();
-		updaterThread->wait(); 
-		delete updaterThread; 
-		updaterThread = nullptr;
-	}
+	//if (updaterThread) {
+	//	updaterThread->stopRunning();
+	//	updaterThread->wait();
+	//	delete updaterThread;
+	//	updaterThread = nullptr;
+	//}
 
 }
 
@@ -115,10 +116,30 @@ QWidget* ChartManager::getWidget() {
 }
 
 
+double ChartManager::adjustXValue(double originalX) {
+	// 四舍五入到最近的0.1
+	double adjustedX = std::round(originalX * 10) / 10.0;
+	return adjustedX;
+}
 
 void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
+	if (x >= 3000) {
+		// 清除所有曲线的数据
+		for (auto &curve : curves) {
+			xDataMap[curve->title().text()].clear();
+			yDataMap[curve->title().text()].clear();
+			curve->setSamples(xDataMap[curve->title().text()], yDataMap[curve->title().text()]);
+		}
+		// 重置x轴范围
+		plot->setAxisScale(QwtPlot::xBottom, 0, 50);
+		plot->replot();
+		return; // 早期返回，避免在清除后添加数据点
+	}
 
+	// 调整x值
+	x = adjustXValue(x);
 
+	// 原有的更新曲线数据的逻辑
 	if (!xDataMap.contains(curveName) || !yDataMap.contains(curveName)) {
 		return; // 如果曲线名称不存在，则直接返回
 	}
@@ -132,19 +153,8 @@ void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
 			break;
 		}
 	}
-	//	// 确定当前数据点所在的X轴区间
-	//int xIntervalIndex = x / xInterval; // 计算当前数据点属于哪个间隔区间
-	//double xMin = xIntervalIndex * xInterval;
-	//double xMax = xMin + xInterval;
 
-	////// Y轴区间计算
-	////int yIntervalIndex = y / yInterval; // 计算当前数据点属于哪个间隔区间
-	////double yMin = yIntervalIndex * yInterval;
-	////double yMax = yMin + yInterval;
-
-	//// 更新X轴和Y轴的范围
-	//plot->setAxisScale(QwtPlot::xBottom, xMin, xMax);
-	////plot->setAxisScale(QwtPlot::yLeft, yMin, yMax);
+	// 原有的逻辑，用于根据新的数据点更新x轴范围
 	if (!isViewingHistory) {
 		xInterval = 50; // 这里设置x轴的间隔值，根据实际情况调整
 		int xMaxCurrent = plot->axisScaleDiv(QwtPlot::xBottom).upperBound(); // 获取当前x轴的最大值
@@ -155,45 +165,7 @@ void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
 		}
 	}
 
-
 	plot->replot(); // 重绘图表
-
-
-	//// 检查是否需要添加新行
-	//int newRow = table->rowCount();
-	//table->insertRow(newRow); // 插入新行
-	//  // 在第一列设置x坐标
-	//table->setItem(newRow, 0, new QTableWidgetItem(QString::number(x)));
-
-	//// 确定曲线名称对应的列索引（加1因为第一列是x坐标）
-	//int columnIndex = curveNames.indexOf(curveName) + 1;
-	//if (columnIndex == 0) return; // 如果找不到对应的曲线名称，直接返回
-
-	//// 在对应的列下添加y值
-	//table->setItem(newRow, columnIndex, new QTableWidgetItem(QString::number(y)));
-
-	//// 按照曲线更新数据，可能需要填充其他列的空白单元格
-	//for (int i = 0; i < table->columnCount(); ++i) {
-	//	if (i != columnIndex && !table->item(newRow, i)) {
-	//		table->setItem(newRow, i, new QTableWidgetItem("NaN")); // 填充空白以保持表格整齐
-	//	}
-	//}
-
-	//QColor cellColor = Qt::white; // Default color
-	//if (y > m_warningValueLower || y < m_warningValueUpper) {
-	//	cellColor = QColor("orange");
-	//}
-	//if (y > m_alarmValueLower || y < m_alarmValueUpper) {
-	//	cellColor = QColor("red");
-	//}
-
-	//// Set the color for the newly added table item
-	//QTableWidgetItem *item = new QTableWidgetItem(QString::number(y));
-	//item->setBackground(cellColor);
-	//table->setItem(newRow, columnIndex, item);
-
-
-	//table->scrollToBottom();
 }
 
 void ChartManager::onIntervalPBClicked() {
@@ -233,9 +205,11 @@ void ChartManager::onIntervalPBClicked() {
 		QLabel* rangeLabel = new QLabel("设置趋势图y轴显示区域（毫米）：", &dialog);
 		QLineEdit* rangeInput1 = new QLineEdit(&dialog);
 		rangeInput1->setValidator(new QDoubleValidator(0, 10000, 2, rangeInput1));
+		rangeInput1->setReadOnly(true); // 设置为只读
 		QLabel *separator = new QLabel(" --- ", &dialog);
 		QLineEdit* rangeInput2 = new QLineEdit(&dialog);
 		rangeInput2->setValidator(new QDoubleValidator(0, 10000, 2, rangeInput2));
+		rangeInput2->setReadOnly(true); // 设置为只读
 		QVariantList yAxisRange = settingDefaults["yAxisRange"].toList();
 		if (!yAxisRange.isEmpty()) {
 			rangeInput1->setText(QString::number(yAxisRange[0].toDouble(), 'f', 2));
@@ -254,9 +228,11 @@ void ChartManager::onIntervalPBClicked() {
 		QLabel* greaterWarningLabel = new QLabel("大于", &dialog);
 		QLineEdit* greaterWarningInput = new QLineEdit(&dialog);
 		greaterWarningInput->setValidator(new QDoubleValidator(0, 10000, 2, greaterWarningInput));
+		greaterWarningInput->setReadOnly(true); // 设置为只读
 		QLabel* lessWarningLabel = new QLabel("或小于", &dialog);
 		QLineEdit* lessWarningInput = new QLineEdit(&dialog);
 		lessWarningInput->setValidator(new QDoubleValidator(0, 10000, 2, lessWarningInput));
+		lessWarningInput->setReadOnly(true); // 设置为只读
 		QVariantList warningValue = settingDefaults["warningValue"].toList();
 		if (!warningValue.isEmpty()) {
 			greaterWarningInput->setText(QString::number(warningValue[0].toDouble(), 'f', 2));
@@ -276,10 +252,11 @@ void ChartManager::onIntervalPBClicked() {
 		QLabel* greaterAlarmLabel = new QLabel("大于", &dialog);
 		QLineEdit* greaterAlarmInput = new QLineEdit(&dialog);
 		greaterAlarmInput->setValidator(new QDoubleValidator(0, 10000, 2, greaterAlarmInput));
+		greaterAlarmInput->setReadOnly(true); // 设置为只读
 		QLabel* lessAlarmLabel = new QLabel("或小于", &dialog);
 		QLineEdit* lessAlarmInput = new QLineEdit(&dialog);
 		lessAlarmInput->setValidator(new QDoubleValidator(0, 10000, 2, lessAlarmInput));
-
+		lessAlarmInput->setReadOnly(true); // 设置为只读
 		QVariantList alarmValue = settingDefaults["alarmValue"].toList();
 		if (!alarmValue.isEmpty()) {
 			greaterAlarmInput->setText(QString::number(alarmValue[0].toDouble(), 'f', 2));
