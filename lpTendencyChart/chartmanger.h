@@ -46,7 +46,7 @@ protected:
 	bool eventFilter(QObject *watched, QEvent *event) override;
 
 public slots:
-	void onChartUpdate(const QString &curveName, int x, qreal y);
+	void onChartUpdate(const QString &curveName, double x, double y);
 	void onIntervalPBClicked();
 	void addCurve(const QString &curveName); 
 	void onLegendClicked(const QVariant &itemInfo, int index);

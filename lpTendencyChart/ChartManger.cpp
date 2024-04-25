@@ -34,7 +34,7 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 		plot->replot();
 	}
 	// 设置X轴和Y轴的初始范围
-	plot->setAxisScale(QwtPlot::xBottom, 0, 50); // 设置X轴的范围为0-50
+	plot->setAxisScale(QwtPlot::xBottom, 0, 10); // 设置X轴的范围为0-50
 	//plot->setAxisScale(QwtPlot::yLeft, 0, 900); // 设置Y轴的范围为0-900
 
 
@@ -119,10 +119,11 @@ QWidget* ChartManager::getWidget() {
 double ChartManager::adjustXValue(double originalX) {
 	// 四舍五入到最近的0.1
 	double adjustedX = std::round(originalX * 10) / 10.0;
+	qDebug() << "adjustedX: " << adjustedX;
 	return adjustedX;
 }
 
-void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
+void ChartManager::onChartUpdate(const QString &curveName, double x, double y) {
 	if (x >= 3000) {
 		// 清除所有曲线的数据
 		for (auto &curve : curves) {
@@ -131,7 +132,7 @@ void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
 			curve->setSamples(xDataMap[curve->title().text()], yDataMap[curve->title().text()]);
 		}
 		// 重置x轴范围
-		plot->setAxisScale(QwtPlot::xBottom, 0, 50);
+		plot->setAxisScale(QwtPlot::xBottom, 0, 10);
 		plot->replot();
 		return; // 早期返回，避免在清除后添加数据点
 	}
@@ -156,7 +157,7 @@ void ChartManager::onChartUpdate(const QString &curveName, int x, qreal y) {
 
 	// 原有的逻辑，用于根据新的数据点更新x轴范围
 	if (!isViewingHistory) {
-		xInterval = 50; // 这里设置x轴的间隔值，根据实际情况调整
+		xInterval = 10; // 这里设置x轴的间隔值，根据实际情况调整
 		int xMaxCurrent = plot->axisScaleDiv(QwtPlot::xBottom).upperBound(); // 获取当前x轴的最大值
 		if (x >= xMaxCurrent) {
 			int xMinNew = ((x / xInterval) * xInterval);
