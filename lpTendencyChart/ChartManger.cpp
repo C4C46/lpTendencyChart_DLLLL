@@ -172,7 +172,7 @@ void ChartManager::onChartUpdate(const QString &curveName, double x, double y) {
 void ChartManager::onIntervalPBClicked() {
 	QDialog dialog(m_widget); // 使用当前widget作为父窗口
 	dialog.setWindowTitle("参数设置");
-	dialog.resize(550, 800);
+	dialog.resize(650, 900);
 	dialog.setFixedSize(dialog.size());
 
 	QGridLayout *gridLayout = new QGridLayout();
@@ -191,19 +191,19 @@ void ChartManager::onIntervalPBClicked() {
 
 	// 对于每个设置项，我们需要创建不同的控件
 	for (int i = 0; i < settingLabels.size(); ++i) {
-		int row = i * 4; // 每个设置占用4行
+		int row = i * 5; // 每个设置占用4行
 		QString settingName = settingLabels[i];
 
 		// 从配置加载器获取默认值
 		QVariantMap settingDefaults = m_configLoader->getSettingDefaultValue(settingName);
 		// 设置标签
-		QLabel* settingLabel = new QLabel(settingLabels[i], &dialog);
-		settingLabel->setStyleSheet("QLabel { font-weight: bold; }");
+		QLabel* settingLabel = new QLabel(QString::number(i+1) + "." + settingLabels[i], &dialog);
+		settingLabel->setStyleSheet("QLabel { font-weight: bold; font-size: 14pt;}");
 		gridLayout->addWidget(settingLabel, row, 0, 1, 2);
 
 		// 趋势图y轴显示区域设置
 		QHBoxLayout* rangeLayout = new QHBoxLayout;
-		QLabel* rangeLabel = new QLabel("设置趋势图y轴显示区域（毫米）：", &dialog);
+		QLabel* rangeLabel = new QLabel("  设置趋势图y轴显示区域（毫米）：", &dialog);
 		QLineEdit* rangeInput1 = new QLineEdit(&dialog);
 		rangeInput1->setValidator(new QDoubleValidator(0, 10000, 2, rangeInput1));
 		rangeInput1->setReadOnly(true); // 设置为只读
@@ -225,7 +225,8 @@ void ChartManager::onIntervalPBClicked() {
 
 		// 预警值设置
 		QHBoxLayout* warningLayout = new QHBoxLayout;
-		QLabel* warningLabel = new QLabel(QString("设置%1预警值（毫米）：").arg(settingLabels[i]), &dialog);
+		QLabel* warningLabel = new QLabel(QString("  设置%1预警值（毫米）：").arg(settingLabels[i]), &dialog);
+		warningLabel->setStyleSheet("QLabel { color: orange; font-size: 12pt;}");
 		QLabel* greaterWarningLabel = new QLabel("大于", &dialog);
 		QLineEdit* greaterWarningInput = new QLineEdit(&dialog);
 		greaterWarningInput->setValidator(new QDoubleValidator(0, 10000, 2, greaterWarningInput));
@@ -249,7 +250,8 @@ void ChartManager::onIntervalPBClicked() {
 
 		// 告警值设置
 		QHBoxLayout* alarmLayout = new QHBoxLayout;
-		QLabel* alarmLabel = new QLabel(QString("设置%1告警值（毫米）：").arg(settingLabels[i]), &dialog);
+		QLabel* alarmLabel = new QLabel(QString("  设置%1告警值（毫米）：").arg(settingLabels[i]), &dialog);
+		alarmLabel->setStyleSheet("QLabel { color: red; font-size: 12pt;}");
 		QLabel* greaterAlarmLabel = new QLabel("大于", &dialog);
 		QLineEdit* greaterAlarmInput = new QLineEdit(&dialog);
 		greaterAlarmInput->setValidator(new QDoubleValidator(0, 10000, 2, greaterAlarmInput));
@@ -306,7 +308,7 @@ void ChartManager::onIntervalPBClicked() {
 	QObject::connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
 
 	// 将按钮布局添加到网格布局的下方
-	gridLayout->addLayout(buttonLayout, settingLabels.size() * 4, 0, 1, 2); // 调整行位置以适应新的布局
+	gridLayout->addLayout(buttonLayout, settingLabels.size() * 5, 0, 1, 2); // 调整行位置以适应新的布局
 
 	// 设置网格布局的间距和边距
 	gridLayout->setHorizontalSpacing(30); // 增加水平间距
