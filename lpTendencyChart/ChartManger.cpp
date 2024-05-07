@@ -18,6 +18,11 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 	plot->setAxisTitle(QwtPlot::xBottom,"");
 	plot->setAxisTitle(QwtPlot::yLeft,"");
 
+
+	m_slider = new QSlider(Qt::Horizontal, m_widget);
+
+
+
 	QString selectedParentNames = m_configLoader->getSelectedParentNames();
 	if (!selectedParentNames.isEmpty())
 	{
@@ -68,6 +73,7 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 		// 使用QSplitter代替原来的布局
 		QSplitter *splitter = new QSplitter(Qt::Vertical, m_widget);
 		splitter->addWidget(plot);
+		splitter->addWidget(m_slider);
 		QVBoxLayout *layout = new QVBoxLayout(m_widget);
 		layout->addWidget(splitter);
 		m_widget->setLayout(layout);
@@ -78,6 +84,8 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 	legend->setDefaultItemMode(QwtLegendData::Clickable);
 	plot->insertLegend(legend, QwtPlot::TopLegend);
 
+/*	m_slider->setRange(0, 1000); */ // 假设x的最大值是1000m
+	connect(m_slider, &QSlider::valueChanged, this, &ChartManager::onSliderValueChanged);
 
 	connect(updaterThread, &ChartUpdaterThread::updateChart, this, &ChartManager::onChartUpdate);
 	// 连接图例点击信号
@@ -155,6 +163,8 @@ void ChartManager::onChartUpdate(const QString &curveName, double x, double y) {
 		}
 	}
 
+
+
 	// 原有的逻辑，用于根据新的数据点更新x轴范围
 	if (!isViewingHistory) {
 		xInterval = 50; // 这里设置x轴的间隔值，根据实际情况调整
@@ -165,8 +175,29 @@ void ChartManager::onChartUpdate(const QString &curveName, double x, double y) {
 			plot->setAxisScale(QwtPlot::xBottom, xMinNew, xMaxNew);
 		}
 	}
+	//	// 自动更新x轴范围以显示最新的数据
+	//double xMaxCurrent = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+	//if (x >= xMaxCurrent) {
+	//	double xMinNew = xMaxCurrent; // 将当前的最大值设置为新的最小值
+	//	double xMaxNew = xMinNew + 50; // 假设一次显示50m的数据
+	//	plot->setAxisScale(QwtPlot::xBottom, xMinNew, xMaxNew);
+	//}
+
+
+	// 更新数据点后，调整滑动条的最大值
+	int currentMaxX = static_cast<int>(x);
+	m_slider->setMaximum(currentMaxX);
+
+
+	    // 保持滑块在最右端
+    if (m_slider->value() == m_slider->maximum() - 50) { // 假设显示范围是50
+        m_slider->setValue(m_slider->maximum());
+    }
+
 
 	plot->replot(); // 重绘图表
+	//	// 更新滑动条位置
+	//updateSliderPosition();
 }
 
 void ChartManager::onIntervalPBClicked() {
@@ -431,8 +462,18 @@ bool ChartManager::eventFilter(QObject *watched, QEvent *event) {
 				int dx = mouseEvent->pos().x() - dragStartPosition.x();
 				isViewingHistory = true;
 				double shift = (xMaxCurrent - xMinCurrent) * dx / plot->canvas()->width();
-				plot->setAxisScale(QwtPlot::xBottom, xMinCurrent - shift, xMaxCurrent - shift);
+				double newMin = xMinCurrent - shift;
+				double newMax = xMaxCurrent - shift;
+
+				// 确保新的x轴范围不小于0
+				if (newMin < 0) {
+					newMin = 0;
+					newMax = xMaxCurrent - xMinCurrent; // 保持区间长度不变
+				}
+
+				plot->setAxisScale(QwtPlot::xBottom, newMin, newMax);
 				plot->replot();
+				updateSliderPosition();// 确保滑动条位置更新
 				return true;
 			}
 			break;
@@ -525,4 +566,21 @@ void ChartManager::updateAlarmValue(const QVariantList &alarmValue) {
 		m_alarmValueLower = alarmValue[0].toDouble();
 		m_alarmValueUpper = alarmValue[1].toDouble();
 	}
+}
+
+void ChartManager::onSliderValueChanged(int value)
+{
+	double xMin = value;
+	double xMax = xMin + 50;  // 假设一次显示50m的数据
+
+	isViewingHistory = true;  // 标记为正在查看历史数据
+
+	plot->setAxisScale(QwtPlot::xBottom, xMin, xMax);
+	plot->replot();
+}
+
+
+void ChartManager::updateSliderPosition() {
+	int xMinCurrent = static_cast<int>(plot->axisScaleDiv(QwtPlot::xBottom).lowerBound());
+	m_slider->setValue(xMinCurrent);
 }

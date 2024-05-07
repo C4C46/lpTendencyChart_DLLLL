@@ -58,6 +58,9 @@ public slots:
 
 	void updateAlarmValue(const QVariantList & alarmValue);
 
+	void onSliderValueChanged(int value);
+
+	void updateSliderPosition();
 
 private:
 	QWidget *m_widget; 
@@ -87,6 +90,8 @@ private:
 	double xMinCurrent, xMaxCurrent; // 用于跟踪当前图表的X轴范围
 	bool isDragging = false; // 标记是否正在拖动
 	bool isViewingHistory = false;
+
+	QSlider *m_slider;//趋势图滚动条
 
 };
 
