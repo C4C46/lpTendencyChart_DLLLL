@@ -57,16 +57,22 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 
 	//updaterThread = new ChartUpdaterThread(this, curveNames);
 
-	if (!curveNames.isEmpty())
-	{
-		////定义颜色生成步长
-		//int colorStep = 360 / curveNames.size();
-		for (int i = 0; i < curveNames.size(); ++i)
-		{
-			//QColor color = QColor::fromHsv((colorStep * i) % 360, 255, 180);
-			addCurve(curveNames[i]);
-		}
-	}
+	//if (!curveNames.isEmpty())
+	//{
+	//	////定义颜色生成步长
+	//	//int colorStep = 360 / curveNames.size();
+	//	for (int i = 0; i < curveNames.size(); ++i)
+	//	{
+	//		//QColor color = QColor::fromHsv((colorStep * i) % 360, 255, 180);
+	//		addCurve(curveNames[i]);
+	//	}
+	//}
+	    // 确保curveNames包含所有曲线名称
+    QStringList allCurveNames = m_configLoader->getAllCurveNames();
+    for (const QString &name : allCurveNames) {
+        addCurve(name);  // 添加所有曲线到图表
+    }
+
 
 	if (m_widget)
 	{
@@ -82,7 +88,7 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 
 	QwtLegend *legend = new QwtLegend();
 	legend->setDefaultItemMode(QwtLegendData::Clickable);
-	plot->insertLegend(legend, QwtPlot::TopLegend);
+	//plot->insertLegend(legend, QwtPlot::TopLegend);
 
 /*	m_slider->setRange(0, 1000); */ // 假设x的最大值是1000m
 	connect(m_slider, &QSlider::valueChanged, this, &ChartManager::onSliderValueChanged);
@@ -399,6 +405,12 @@ void ChartManager::addCurve(const QString &curveName) {
 	curves.append(curve);
 	xDataMap[curveName] = QVector<double>(); // 初始化数据存储
 	yDataMap[curveName] = QVector<double>();
+	// 根据curveNames列表设置曲线的可见性和图例显示
+	bool isVisible = curveNames.contains(curveName);
+	curve->setVisible(isVisible); // 根据是否存在于curveNames中设置可见性
+	curve->setItemAttribute(QwtPlotItem::Legend, isVisible); // 同样设置图例的显示
+
+	plot->replot(); // 重绘图表以应用更改
 }
 
 void ChartManager::onLegendClicked(const QVariant &itemInfo, int index) {
@@ -495,52 +507,27 @@ bool ChartManager::eventFilter(QObject *watched, QEvent *event) {
 
 
 void ChartManager::onCurveDisplayChanged(const QString &curveName, bool display) {
-	if (display) {
-		// 检查曲线是否已存在
-		bool curveExists = false;
-		for (auto &curve : curves) {
-			if (curve->title().text() == curveName) {
-				curveExists = true;
-				break;
-			}
-		}
-
-		if (!curveExists) {
-			// 曲线不存在，创建新曲线
-			//QColor color = QColor::fromHsv((curves.size() * 30) % 360, 255, 180); // 示例颜色
-			addCurve(curveName); // 假设这个方法已经实现
-
-			// 更新ChartUpdaterThread中的曲线名称列表
-			QStringList updatedCurveNames;
-			for (auto &curve : curves) {
-				updatedCurveNames.append(curve->title().text());
-			}
-			updaterThread->updateCurveNames(updatedCurveNames);
-
-			// 添加曲线名称到curveNames列表，用于其他同步操作
-			curveNames.append(curveName);
+	for (auto &curve : curves) {
+		if (curve->title().text() == curveName) {
+			curve->setVisible(display);  // 设置曲线的可见性
+			curve->setItemAttribute(QwtPlotItem::Legend, display);  // 控制是否在图例中显示
+			plot->replot();  // 重绘图表以应用更改
+			return;  // 找到曲线后返回
 		}
 	}
-	else {
-		// 处理隐藏曲线的逻辑
-		for (auto &curve : curves) {
-			if (curve->title().text() == curveName) {
-				curve->detach(); // 从图表中移除曲线
-				curves.removeOne(curve); // 从曲线列表中移除
-				break;
-			}
-		}
 
+	// 如果曲线不存在且需要显示，则添加新曲线
+	if (display) {
+		addCurve(curveName);  // 添加曲线
 		// 更新ChartUpdaterThread中的曲线名称列表
 		QStringList updatedCurveNames;
 		for (auto &curve : curves) {
 			updatedCurveNames.append(curve->title().text());
 		}
 		updaterThread->updateCurveNames(updatedCurveNames);
-		curveNames.removeAll(curveName); // 从曲线名称列表中移除
+		curveNames.append(curveName);  // 添加曲线名称到curveNames列表，用于其他同步操作
+		plot->replot();  // 重绘图表
 	}
-
-	plot->replot(); // 重绘图表
 }
 
 
