@@ -4,29 +4,35 @@
 #include <QWidget>
 #include "ChartManger.h"
 #include "ConfigLoader.h"
+#include "DataScope.h"
 
-class Ui_ChartDemoClass;
+class Ui_lpTendencyClass;
 class ChartManger;
 class ConfigLoader;
-
-class LPTENDENCYCHART_EXPORT ChartDemo : public QWidget
+class ChartUpdaterThread;
+class DataScope;
+class LPTENDENCYCHART_EXPORT lpTendencyChart : public QWidget
 {
 	Q_OBJECT
 
 public:
-	ChartDemo(QWidget *parent = nullptr);
-	~ChartDemo();
+	lpTendencyChart(QWidget *parent = nullptr);
+	~lpTendencyChart();
 
 	void init();
-
+	QwtPlot* getPlot() const;
+	QTableWidget* getTable() const;
 
 public slots:
+	void updateData(const QString &curveName, double x, double y);
 	void handleIntervalPBClicked();
 	void toggleTableVisibility();
 
 private:
-	Ui_ChartDemoClass *ui{ nullptr };
+	Ui_lpTendencyClass *ui{ nullptr };
 	ChartManager *chartManager{ nullptr };
 	ConfigLoader *configLoader{ nullptr };
+	ChartUpdaterThread *chartUpdaterThread;
+	DataScope *dataScope;
 
 };
