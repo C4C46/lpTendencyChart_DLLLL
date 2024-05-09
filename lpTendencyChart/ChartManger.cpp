@@ -88,7 +88,7 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 
 	QwtLegend *legend = new QwtLegend();
 	legend->setDefaultItemMode(QwtLegendData::Clickable);
-	//plot->insertLegend(legend, QwtPlot::TopLegend);
+	plot->insertLegend(legend, QwtPlot::TopLegend);
 
 /*	m_slider->setRange(0, 1000); */ // 假设x的最大值是1000m
 	connect(m_slider, &QSlider::valueChanged, this, &ChartManager::onSliderValueChanged);
@@ -457,7 +457,7 @@ bool ChartManager::eventFilter(QObject *watched, QEvent *event) {
 				xMaxCurrent = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
 				isDragging = true;
 
-				resetCurvesOpacity();
+
 				plot->replot(); // 重绘图表以应用更改
 				//isViewingHistory = true; // 开始查看历史
 				return true;
@@ -465,6 +465,10 @@ bool ChartManager::eventFilter(QObject *watched, QEvent *event) {
 			else if (mouseEvent->button() == Qt::RightButton) {
 				// 当用户右键点击时，退出历史查看模式
 				isViewingHistory = false;
+				resetCurvesOpacity();
+				plot->replot(); // 重绘图表以应用更改
+				return true;
+
 			}
 			break;
 		}

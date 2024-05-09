@@ -30,8 +30,25 @@ void DataScope::setColumnNames(const QStringList & names)
 
 	data_tableWidget->setColumnWidth(0, 100); // 设置第一列的固定宽度
 	data_tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // 第一列宽度固定
+	// 设置其余列为可交互的拉伸模式
 	for (int i = 1; i < data_tableWidget->columnCount(); ++i) {
-		data_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch); // 其他列平均分布
+		data_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
+	}
+
+	  // 设置最后一列顶满表格
+    data_tableWidget->horizontalHeader()->setSectionResizeMode(data_tableWidget->columnCount() - 1, QHeaderView::Stretch);
+
+
+
+
+	// 设置工具提示显示完整的列名称
+	for (int i = 0; i < headers.size(); ++i) {
+		QTableWidgetItem* headerItem = data_tableWidget->horizontalHeaderItem(i);
+		if (!headerItem) {
+			headerItem = new QTableWidgetItem();
+			data_tableWidget->setHorizontalHeaderItem(i, headerItem);
+		}
+		headerItem->setToolTip(headers[i]);
 	}
 }
 
@@ -85,12 +102,33 @@ void DataScope::addData(const QString &curveName, double x, double y, const QVar
 
 bool DataScope::eventFilter(QObject *obj, QEvent *event) {
 	if (obj == data_tableWidget->verticalScrollBar()) {
-		if (event->type() == QEvent::Wheel || event->type() == QEvent::MouseButtonPress) {
-			autoScrollEnabled = false;
+		if (event->type() == QEvent::MouseButtonPress) {
+			QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+			if (mouseEvent->button() == Qt::LeftButton) {
+				// 鼠标左键按下，停止自动滚动
+				autoScrollEnabled = false;
+			}
+			else if (mouseEvent->button() == Qt::RightButton) {
+				// 鼠标右键按下，恢复自动滚动
+				autoScrollEnabled = true;
+				data_tableWidget->scrollToBottom();
+				return true; // 消费掉此事件，防止进一步处理
+			}
 		}
-		else if (event->type() == QEvent::MouseButtonRelease) {
-			autoScrollEnabled = true;
-			data_tableWidget->scrollToBottom();
+		else if (event->type() == QEvent::Wheel) {
+			QWheelEvent *wheelEvent = static_cast<QWheelEvent*>(event);
+			// 检查是否滚动到底部
+			if (data_tableWidget->verticalScrollBar()->value() == data_tableWidget->verticalScrollBar()->maximum()) {
+				autoScrollEnabled = true;
+				data_tableWidget->scrollToBottom();
+			}
+			else {
+				autoScrollEnabled = false;
+			}
+		}
+		else if (event->type() == QEvent::ContextMenu) {
+			// 忽略上下文菜单事件
+			return true;
 		}
 	}
 	return QObject::eventFilter(obj, event);
