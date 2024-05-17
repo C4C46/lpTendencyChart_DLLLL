@@ -25,6 +25,7 @@ public:
 	void loadConfig(const QString &filePath);
 	void saveConfig(const QString &filePath); // 添加保存配置的声明
 	QString getSelectedParentNames() const;
+	void updateSetting(const QString & settingName, const QString & key, const QVariantList & value);
 	QStringList getCurveNames() const; // 新增方法
 	QString getParentNameForCurve(const QString & curveName) const;//子类所属父类
 
@@ -36,6 +37,7 @@ signals:
 	void yAxisRangeChanged(const QVariantList &yAxisRange);
 	void warningValueChanged(const QVariantList &warningValue);
 	void alarmValueChanged(const QVariantList &alarmValue);
+
 private:
 	QTreeWidget *m_treeWidget;
 	QStringList curveNames; // 存储曲线名称

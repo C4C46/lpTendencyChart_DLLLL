@@ -206,7 +206,9 @@ void ChartManager::onChartUpdate(const QString &curveName, double x, double y) {
 	//updateSliderPosition();
 }
 
+//参数设置
 void ChartManager::onIntervalPBClicked() {
+
 	QDialog dialog(m_widget); // 使用当前widget作为父窗口
 	dialog.setWindowTitle("参数设置");
 	dialog.resize(650, 900);
@@ -217,6 +219,9 @@ void ChartManager::onIntervalPBClicked() {
 
 	// 通过ConfigLoader获取父类名字
 	QStringList settingLabels = m_configLoader->getParentCategoryNames();
+	QVector<QLineEdit*> rangeInputs1, rangeInputs2;
+	QVector<QLineEdit*> warningInputs1, warningInputs2;
+	QVector<QLineEdit*> alarmInputs1, alarmInputs2;
 
 	//QStringList settingLabels = {
 	//	"A/B面整体宽度",
@@ -228,9 +233,9 @@ void ChartManager::onIntervalPBClicked() {
 
 	// 对于每个设置项，我们需要创建不同的控件
 	for (int i = 0; i < settingLabels.size(); ++i) {
-		int row = i * 5; // 每个设置占用4行
-		QString settingName = settingLabels[i];
 
+		int row = i * 5; // 每个设置占用5行
+		QString settingName = settingLabels[i];
 		// 从配置加载器获取默认值
 		QVariantMap settingDefaults = m_configLoader->getSettingDefaultValue(settingName);
 		// 设置标签
@@ -242,18 +247,19 @@ void ChartManager::onIntervalPBClicked() {
 		QHBoxLayout* rangeLayout = new QHBoxLayout;
 		QLabel* rangeLabel = new QLabel("  设置趋势图y轴显示区域（毫米）：", &dialog);
 		QLineEdit* rangeInput1 = new QLineEdit(&dialog);
-		rangeInput1->setValidator(new QDoubleValidator(0, 10000, 2, rangeInput1));
-		rangeInput1->setReadOnly(true); // 设置为只读
+		rangeInput1->setValidator(new QDoubleValidator(-1000, 10000, 2, rangeInput1));
+		//rangeInput1->setReadOnly(true); // 设置为只读
 		QLabel *separator = new QLabel(" --- ", &dialog);
 		QLineEdit* rangeInput2 = new QLineEdit(&dialog);
-		rangeInput2->setValidator(new QDoubleValidator(0, 10000, 2, rangeInput2));
-		rangeInput2->setReadOnly(true); // 设置为只读
+		rangeInput2->setValidator(new QDoubleValidator(-1000, 10000, 2, rangeInput2));
+		//rangeInput2->setReadOnly(true); // 设置为只读
 		QVariantList yAxisRange = settingDefaults["yAxisRange"].toList();
 		if (!yAxisRange.isEmpty()) {
 			rangeInput1->setText(QString::number(yAxisRange[0].toDouble(), 'f', 2));
 			rangeInput2->setText(QString::number(yAxisRange[1].toDouble(), 'f', 2));
 		}
-
+		rangeInputs1.push_back(rangeInput1);
+		rangeInputs2.push_back(rangeInput2);
 		rangeLayout->addWidget(rangeLabel);
 		rangeLayout->addWidget(rangeInput1);
 		rangeLayout->addWidget(separator);
@@ -266,17 +272,19 @@ void ChartManager::onIntervalPBClicked() {
 		warningLabel->setStyleSheet("QLabel { color: orange; font-size: 12pt;}");
 		QLabel* greaterWarningLabel = new QLabel("大于", &dialog);
 		QLineEdit* greaterWarningInput = new QLineEdit(&dialog);
-		greaterWarningInput->setValidator(new QDoubleValidator(0, 10000, 2, greaterWarningInput));
-		greaterWarningInput->setReadOnly(true); // 设置为只读
+		greaterWarningInput->setValidator(new QDoubleValidator(-1000, 10000, 2, greaterWarningInput));
+		//greaterWarningInput->setReadOnly(true); // 设置为只读
 		QLabel* lessWarningLabel = new QLabel("或小于", &dialog);
 		QLineEdit* lessWarningInput = new QLineEdit(&dialog);
-		lessWarningInput->setValidator(new QDoubleValidator(0, 10000, 2, lessWarningInput));
-		lessWarningInput->setReadOnly(true); // 设置为只读
+		lessWarningInput->setValidator(new QDoubleValidator(-1000, 10000, 2, lessWarningInput));
+		//lessWarningInput->setReadOnly(true); // 设置为只读
 		QVariantList warningValue = settingDefaults["warningValue"].toList();
 		if (!warningValue.isEmpty()) {
 			greaterWarningInput->setText(QString::number(warningValue[0].toDouble(), 'f', 2));
 			lessWarningInput->setText(QString::number(warningValue[1].toDouble(), 'f', 2));
 		}
+		warningInputs1.push_back(greaterWarningInput);
+		warningInputs2.push_back(lessWarningInput);
 
 		warningLayout->addWidget(warningLabel);
 		warningLayout->addWidget(greaterWarningLabel);
@@ -291,17 +299,20 @@ void ChartManager::onIntervalPBClicked() {
 		alarmLabel->setStyleSheet("QLabel { color: red; font-size: 12pt;}");
 		QLabel* greaterAlarmLabel = new QLabel("大于", &dialog);
 		QLineEdit* greaterAlarmInput = new QLineEdit(&dialog);
-		greaterAlarmInput->setValidator(new QDoubleValidator(0, 10000, 2, greaterAlarmInput));
-		greaterAlarmInput->setReadOnly(true); // 设置为只读
+		greaterAlarmInput->setValidator(new QDoubleValidator(-1000, 10000, 2, greaterAlarmInput));
+		//greaterAlarmInput->setReadOnly(true); // 设置为只读
 		QLabel* lessAlarmLabel = new QLabel("或小于", &dialog);
 		QLineEdit* lessAlarmInput = new QLineEdit(&dialog);
-		lessAlarmInput->setValidator(new QDoubleValidator(0, 10000, 2, lessAlarmInput));
-		lessAlarmInput->setReadOnly(true); // 设置为只读
+		lessAlarmInput->setValidator(new QDoubleValidator(-1000, 10000, 2, lessAlarmInput));
+		//lessAlarmInput->setReadOnly(true); // 设置为只读
 		QVariantList alarmValue = settingDefaults["alarmValue"].toList();
 		if (!alarmValue.isEmpty()) {
 			greaterAlarmInput->setText(QString::number(alarmValue[0].toDouble(), 'f', 2));
 			lessAlarmInput->setText(QString::number(alarmValue[1].toDouble(), 'f', 2)); // 更正此处
 		}
+
+		alarmInputs1.push_back(greaterAlarmInput);
+		alarmInputs2.push_back(lessAlarmInput);
 		alarmLayout->addWidget(alarmLabel);
 		alarmLayout->addWidget(greaterAlarmLabel);
 		alarmLayout->addWidget(greaterAlarmInput);
@@ -331,6 +342,58 @@ void ChartManager::onIntervalPBClicked() {
 	QPushButton *confirmButton = new QPushButton("确定", &dialog);
 	QPushButton *cancelButton = new QPushButton("取消", &dialog);
 
+	QObject::connect(confirmButton, &QPushButton::clicked, [&]() {
+		QString selectedParentName = m_configLoader->getSelectedParentNames(); // 获取当前选中的父类名称
+		bool shouldReplot = false; // 标记是否需要重绘图表
+
+		for (int i = 0; i < settingLabels.size(); ++i) {
+			QString settingName = settingLabels[i];
+			QVariantList yAxisRange = { rangeInputs1[i]->text().toDouble(), rangeInputs2[i]->text().toDouble() };
+			QVariantList warningValue = { warningInputs1[i]->text().toDouble(), warningInputs2[i]->text().toDouble() };
+			QVariantList alarmValue = { alarmInputs1[i]->text().toDouble(), alarmInputs2[i]->text().toDouble() };
+
+			m_configLoader->updateSetting(settingName, "yAxisRange", yAxisRange);
+			m_configLoader->updateSetting(settingName, "warningValue", warningValue);
+			m_configLoader->updateSetting(settingName, "alarmValue", alarmValue);
+
+			if (settingName == selectedParentName) {
+				// 更新图表的Y轴范围
+				plot->setAxisScale(QwtPlot::yLeft, yAxisRange[0].toDouble(), yAxisRange[1].toDouble());
+				shouldReplot = true; // 标记需要重绘图表
+				qDebug() << "Setting Y-axis range for" << settingName << "to" << yAxisRange;
+			}
+		}
+
+		if (shouldReplot) {
+			plot->replot(); // 如果需要，则重新绘制图表以应用更改
+		}
+
+		dialog.accept(); // 关闭对话框
+	});
+	//QObject::connect(confirmButton, &QPushButton::clicked, [&]() {
+	//	QString selectedParentName = m_configLoader->getSelectedParentNames(); // 获取当前选中的父类名称
+	//	for (int i = 0; i < settingLabels.size(); ++i) {
+	//		QString settingName = settingLabels[i];
+	//		if (settingName == selectedParentName) { // 只处理当前选中的设置
+	//			QVariantList yAxisRange = { rangeInputs1[i]->text().toDouble(), rangeInputs2[i]->text().toDouble() };
+	//			QVariantList warningValue = { warningInputs1[i]->text().toDouble(), warningInputs2[i]->text().toDouble() };
+	//			QVariantList alarmValue = { alarmInputs1[i]->text().toDouble(), alarmInputs2[i]->text().toDouble() };
+
+	//			m_configLoader->updateSetting(settingName, "yAxisRange", yAxisRange);
+	//			m_configLoader->updateSetting(settingName, "warningValue", warningValue);
+	//			m_configLoader->updateSetting(settingName, "alarmValue", alarmValue);
+
+	//			// 更新图表的Y轴范围
+	//			plot->setAxisScale(QwtPlot::yLeft, yAxisRange[0].toDouble(), yAxisRange[1].toDouble());
+	//			plot->replot(); // 重新绘制图表以应用更改
+
+	//			qDebug() << "Setting Y-axis range for" << settingName << "to" << yAxisRange;
+	//			break; // 一旦找到并处理了选中的设置，就退出循环
+	//		}
+
+	//	}
+	//	dialog.accept(); // 关闭对话框
+	//});
 
 	// 设置按钮的布局
 	QHBoxLayout *buttonLayout = new QHBoxLayout;
@@ -340,8 +403,8 @@ void ChartManager::onIntervalPBClicked() {
 	buttonLayout->addWidget(cancelButton);
 
 
-	// 连接按钮的信号与槽
-	QObject::connect(confirmButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+	//// 连接按钮的信号与槽
+	//QObject::connect(confirmButton, &QPushButton::clicked, &dialog, &QDialog::accept);
 	QObject::connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
 
 	// 将按钮布局添加到网格布局的下方
@@ -355,23 +418,10 @@ void ChartManager::onIntervalPBClicked() {
 	// 将网格布局添加到对话框
 	dialog.setLayout(gridLayout);
 
+	dialog.exec();
 
-	// 显示对话框
-	if (dialog.exec() == QDialog::Accepted) {
-		//xInterval = xInput.text().toDouble();
-		//yInterval = yInput.text().toDouble();
 
-		//// 计算新的X轴和Y轴范围
-		//double xMin = 0;
-		//double xMax = xMin + xInterval; // 以xInterval为间隔计算xMax
-		//double yMin = 0;
-		//double yMax = yMin + yInterval; // 以yInterval为间隔计算yMax
 
-		//// 更新图表的X轴和Y轴范围
-		//plot->setAxisScale(QwtPlot::xBottom, xMin, xMax);
-		//plot->setAxisScale(QwtPlot::yLeft, yMin, yMax);
-		//plot->replot(); // 重绘图表以应用新的间隔
-	}
 }
 
 QColor colorFromName(const QString &name) {
@@ -400,7 +450,15 @@ void ChartManager::addCurve(const QString &curveName) {
 
 
 	QColor color = colorFromName(curveName);
-	curve->setPen(color, 3); // 设置曲线颜色和宽度
+	curve->setPen(color, 2); // 设置曲线颜色和宽度
+
+		// 启用抗锯齿
+	curve->setRenderHint(QwtPlotItem::RenderAntialiased);
+
+	//// 使用样条曲线插值
+	//curve->setCurveAttribute(QwtPlotCurve::Fitted, true);
+
+
 	curve->attach(plot);
 	curves.append(curve);
 	xDataMap[curveName] = QVector<double>(); // 初始化数据存储
@@ -426,6 +484,7 @@ void ChartManager::onLegendClicked(const QVariant &itemInfo, int index) {
 			QColor color = curve->pen().color();
 			color.setAlpha(50); // 设置为半透明
 			curve->setPen(QPen(color, 2));
+			curve->setRenderHint(QwtPlotItem::RenderAntialiased);
 		}
 	}
 
@@ -437,7 +496,8 @@ void ChartManager::resetCurvesOpacity() {
 	for (auto &curve : curves) {
 		QColor color = curve->pen().color();
 		color.setAlpha(255); // 设置为完全不透明
-		curve->setPen(QPen(color, 3));
+		curve->setPen(QPen(color, 2));
+		curve->setRenderHint(QwtPlotItem::RenderAntialiased);
 	}
 }
 

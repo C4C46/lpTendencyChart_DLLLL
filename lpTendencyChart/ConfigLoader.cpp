@@ -337,3 +337,26 @@ QString ConfigLoader::getSelectedParentNames() const {
 	return QString();
 
 }
+
+
+void ConfigLoader::updateSetting(const QString &settingName, const QString &key, const QVariantList &value) {
+	if (configDoc.isNull() || !configDoc.isObject()) return;
+
+	QJsonObject rootObj = configDoc.object();
+	QJsonArray categories = rootObj["categories"].toArray();
+
+	for (int i = 0; i < categories.size(); ++i) {
+		QJsonObject categoryObj = categories[i].toObject();
+		if (categoryObj["name"].toString() == settingName) {
+			QJsonObject settingsObj = categoryObj["settings"].toObject();
+			settingsObj[key] = QJsonArray::fromVariantList(value);
+			categoryObj["settings"] = settingsObj;
+			categories[i] = categoryObj;
+			break;
+		}
+	}
+
+	rootObj["categories"] = categories;
+	configDoc.setObject(rootObj);
+
+}
