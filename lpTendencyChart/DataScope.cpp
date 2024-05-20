@@ -38,7 +38,9 @@ void DataScope::setColumnNames(const QStringList & names)
 	  // 设置最后一列顶满表格
     data_tableWidget->horizontalHeader()->setSectionResizeMode(data_tableWidget->columnCount() - 1, QHeaderView::Stretch);
 
-
+	int lastColumnIndex = data_tableWidget->columnCount() - 1;
+	data_tableWidget->horizontalHeader()->setSectionResizeMode(lastColumnIndex, QHeaderView::Stretch);
+	data_tableWidget->horizontalHeader()->resizeSection(lastColumnIndex, 150); // 设置初始宽度为 150 像素
 
 
 	// 设置工具提示显示完整的列名称
