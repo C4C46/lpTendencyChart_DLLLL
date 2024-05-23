@@ -28,19 +28,36 @@ void DataScope::setColumnNames(const QStringList & names)
 	// 隐藏行号
 	data_tableWidget->verticalHeader()->setVisible(false);
 
-	data_tableWidget->setColumnWidth(0, 100); // 设置第一列的固定宽度
-	data_tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // 第一列宽度固定
-	// 设置其余列为可交互的拉伸模式
-	for (int i = 1; i < data_tableWidget->columnCount(); ++i) {
-		data_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
+	//data_tableWidget->setColumnWidth(0, 100); // 设置第一列的固定宽度
+	//data_tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // 第一列宽度固定
+	//// 设置其余列为可交互的拉伸模式
+	//for (int i = 1; i < data_tableWidget->columnCount(); ++i) {
+	//	data_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
+	//}
+
+	//  // 设置最后一列顶满表格
+ //   data_tableWidget->horizontalHeader()->setSectionResizeMode(data_tableWidget->columnCount() - 1, QHeaderView::Stretch);
+
+	//int lastColumnIndex = data_tableWidget->columnCount() - 1;
+	//data_tableWidget->horizontalHeader()->setSectionResizeMode(lastColumnIndex, QHeaderView::Stretch);
+	//data_tableWidget->horizontalHeader()->resizeSection(lastColumnIndex, 200); // 设置初始宽度为 150 像素
+	// 设置列宽
+	QFontMetrics metrics(data_tableWidget->font());
+	int minWidth = 100; // 最小宽度
+	for (int i = 0; i < headers.size(); ++i) {
+		int width = metrics.width(headers[i]) + 20; // 加20像素留白
+		width = qMax(width, minWidth); // 确保不小于最小宽度
+		data_tableWidget->setColumnWidth(i, width);
+		if (i < headers.size() - 1) {
+			data_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
+		}
+		else {
+			data_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+		}
 	}
-
-	  // 设置最后一列顶满表格
-    data_tableWidget->horizontalHeader()->setSectionResizeMode(data_tableWidget->columnCount() - 1, QHeaderView::Stretch);
-
-	int lastColumnIndex = data_tableWidget->columnCount() - 1;
-	data_tableWidget->horizontalHeader()->setSectionResizeMode(lastColumnIndex, QHeaderView::Stretch);
-	data_tableWidget->horizontalHeader()->resizeSection(lastColumnIndex, 150); // 设置初始宽度为 150 像素
+	//// 设置最后一列顶满表格
+	//int lastColumnIndex = data_tableWidget->columnCount() - 1;
+	//data_tableWidget->horizontalHeader()->setSectionResizeMode(lastColumnIndex, QHeaderView::Stretch);
 
 
 	// 设置工具提示显示完整的列名称

@@ -156,7 +156,7 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 	QJsonArray categoriesArray = jsonObject["categories"].toArray();
 
 	m_treeWidget->setColumnWidth(0, 35);
-	m_treeWidget->setColumnWidth(1, 180); // 为名称列设置更大的宽度
+	m_treeWidget->setColumnWidth(1, 220); // 为名称列设置更大的宽度
 
 	QFont font = m_treeWidget->font();
 	font.setPointSize(font.pointSize() + 2); // 增加字体大小

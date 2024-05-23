@@ -73,8 +73,8 @@ public:
         __qtreewidgetitem->setText(0, QStringLiteral("1"));
         treeWidget->setHeaderItem(__qtreewidgetitem);
         treeWidget->setObjectName(QStringLiteral("treeWidget"));
-        treeWidget->setMinimumSize(QSize(220, 0));
-        treeWidget->setMaximumSize(QSize(220, 16777215));
+        treeWidget->setMinimumSize(QSize(240, 0));
+        treeWidget->setMaximumSize(QSize(300, 16777215));
 
         horizontalLayout_3->addWidget(treeWidget);
 
