@@ -21,11 +21,13 @@ class ConfigLoader :
 
 public:
 	explicit ConfigLoader(QTreeWidget *treeWidget, QObject *parent = nullptr);
+	QStringList getAllCurveNamesExceptParent(const QString & excludedParentName) const;
 	QVariantMap getSettingDefaultValue(const QString & settingName);
 	void loadConfig(const QString &filePath);
 	void saveConfig(const QString &filePath); // 添加保存配置的声明
 	QString getSelectedParentNames() const;
-	void updateSetting(const QString & settingName, const QString & key, const QVariantList & value);
+	void updateSetting(const QString & settingName, const QString & key, const QVariantList & value);//参数设置实时修改
+	void addNewChildToCategory(const QString & categoryName, const QString & childName, bool display);//对齐度配方实时搭配
 	QStringList getCurveNames() const; // 新增方法
 	QString getParentNameForCurve(const QString & curveName) const;//子类所属父类
 

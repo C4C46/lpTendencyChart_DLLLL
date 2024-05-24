@@ -22,6 +22,8 @@
 #include <qwt_legend_label.h>
 #include <QMouseEvent>
 #include <QHash>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include "ConfigLoader.h"
 #include "ChartUpdaterThread.h"
 
@@ -48,6 +50,9 @@ protected:
 public slots:
 	void onChartUpdate(const QString &curveName, double x, double y);
 	void onIntervalPBClicked();
+	void AlignPBClicked();
+
+
 	void addCurve(const QString &curveName); 
 	void onLegendClicked(const QVariant &itemInfo, int index);
 	void onCurveDisplayChanged(const QString &curveName, bool display); // 添加这个槽函数

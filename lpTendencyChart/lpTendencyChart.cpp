@@ -49,13 +49,14 @@ void lpTendencyChart::init()
 	connect(chartUpdaterThread, &ChartUpdaterThread::updateChart, this, &lpTendencyChart::updateData);
 	connect(ui->Interval_PB, &QPushButton::clicked, this, &lpTendencyChart::handleIntervalPBClicked);
 	connect(ui->Toggle_PB, &QPushButton::clicked, this, &lpTendencyChart::toggleTableVisibility);
+	connect(ui->Align_PB, &QPushButton::clicked, this, &lpTendencyChart::AlianPBClicked);
 }
 
 
 
 void lpTendencyChart::handleIntervalPBClicked() {
 	if (chartManager) {
-		chartManager->onIntervalPBClicked();//用于显示间隔设置对话框
+		chartManager->onIntervalPBClicked();//用于参数设置对话框
 	}
 }
 
@@ -64,6 +65,14 @@ void lpTendencyChart::toggleTableVisibility()
 {
 	ui->treeWidget->setVisible(!ui->treeWidget->isVisible());
 	ui->Toggle_PB->setText(ui->treeWidget->isVisible() ? "趋势指标勾选隐藏" : "趋势指标勾选显示");
+}
+
+void lpTendencyChart::AlianPBClicked()
+{
+	if (chartManager)
+	{
+		chartManager->AlignPBClicked();//用于显示对齐度设置对话框
+	}
 }
 
 void lpTendencyChart::updateData(const QString &curveName, double x, double y) {

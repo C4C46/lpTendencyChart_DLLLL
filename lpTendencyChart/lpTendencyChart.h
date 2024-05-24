@@ -27,6 +27,7 @@ public slots:
 	void updateData(const QString &curveName, double x, double y);
 	void handleIntervalPBClicked();
 	void toggleTableVisibility();
+	void AlianPBClicked();
 
 private:
 	Ui_lpTendencyClass *ui{ nullptr };

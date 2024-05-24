@@ -38,6 +38,7 @@ public:
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer;
+    QPushButton *Align_PB;
     QPushButton *Interval_PB;
     QWidget *Chartwidget;
     QHBoxLayout *horizontalLayout_2;
@@ -87,6 +88,11 @@ public:
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout->addItem(horizontalSpacer);
+
+        Align_PB = new QPushButton(Top_widget);
+        Align_PB->setObjectName(QStringLiteral("Align_PB"));
+
+        horizontalLayout->addWidget(Align_PB);
 
         Interval_PB = new QPushButton(Top_widget);
         Interval_PB->setObjectName(QStringLiteral("Interval_PB"));
@@ -149,6 +155,7 @@ public:
     void retranslateUi(QWidget *lpTendencyClass)
     {
         lpTendencyClass->setWindowTitle(QApplication::translate("lpTendencyClass", "ChartDemo", Q_NULLPTR));
+        Align_PB->setText(QApplication::translate("lpTendencyClass", "\345\257\271\351\275\220\345\272\246\350\256\276\347\275\256", Q_NULLPTR));
         Interval_PB->setText(QApplication::translate("lpTendencyClass", "\345\217\202\346\225\260\350\256\276\347\275\256", Q_NULLPTR));
         Toggle_PB->setText(QApplication::translate("lpTendencyClass", "\350\266\213\345\212\277\346\214\207\346\240\207\351\232\220\350\227\217", Q_NULLPTR));
     } // retranslateUi

@@ -424,6 +424,135 @@ void ChartManager::onIntervalPBClicked() {
 
 }
 
+void ChartManager::AlignPBClicked()
+{
+	QDialog dialog(m_widget); // 使用当前widget作为父窗口
+	dialog.setWindowTitle("对齐度设置");
+	dialog.resize(650, 500);
+	dialog.setFixedSize(dialog.size());
+
+	QGridLayout *gridLayout = new QGridLayout(&dialog);
+
+
+	// 获取除了“对齐度”之外的所有子类名称
+	QStringList subCategoryNames = m_configLoader->getAllCurveNamesExceptParent("A/B面对齐度");
+
+
+	// 创建左侧和右侧的单选按钮组
+	QButtonGroup *leftGroup = new QButtonGroup(&dialog);
+	QButtonGroup *rightGroup = new QButtonGroup(&dialog);
+
+
+	//创建左侧和右侧的选项列表
+	QStringList leftOptions;
+	QStringList rightOptions;
+
+	for (const QString &name : subCategoryNames)
+	{
+		if (name.startsWith("A"))
+		{
+			leftOptions.append(name);
+		}
+		else if (name.startsWith("B"))
+		{
+			rightOptions.append(name);
+		}
+	}
+
+	// 添加左侧单选按钮
+	for (int i = 0; i < leftOptions.size(); ++i) {
+		QRadioButton *radioButton = new QRadioButton(leftOptions[i], &dialog);
+		leftGroup->addButton(radioButton, i);
+		gridLayout->addWidget(radioButton, i, 0);
+	}
+
+	// 添加右侧单选按钮
+	for (int i = 0; i < rightOptions.size(); ++i) {
+		QRadioButton *radioButton = new QRadioButton(rightOptions[i], &dialog);
+		rightGroup->addButton(radioButton, i);
+		gridLayout->addWidget(radioButton, i, 1);
+	}
+
+	// 创建显示对齐度的文本框
+	QLineEdit *alignmentDisplay = new QLineEdit(&dialog);
+	alignmentDisplay->setReadOnly(true);
+	gridLayout->addWidget(alignmentDisplay, leftOptions.size(), 0, 1, 2);
+
+	// 创建确定和取消按钮
+	QPushButton *confirmButton = new QPushButton("确定", &dialog);
+	QPushButton *cancelButton = new QPushButton("取消", &dialog);
+
+	// 设置按钮的布局
+	QHBoxLayout *buttonLayout = new QHBoxLayout;
+	buttonLayout->addStretch(); // 添加弹性空间，使按钮靠右对齐
+	buttonLayout->addWidget(confirmButton);
+	//buttonLayout->addSpacing(10); // 在两个按钮之间添加10像素的间距
+	buttonLayout->addWidget(cancelButton);
+
+	// 将按钮布局添加到网格布局的下方
+	gridLayout->addLayout(buttonLayout, subCategoryNames.size() + 1, 0, 1, 2); // 调整行位置以适应新的布局
+
+		// 更新对齐度显示的函数
+	auto updateAlignmentDisplay = [&]() {
+		int leftId = leftGroup->checkedId();
+		int rightId = rightGroup->checkedId();
+
+		if (leftId != -1 && rightId != -1) {
+			QString leftOption = leftOptions[leftId];
+			QString rightOption = rightOptions[rightId];
+			QString alignment = QString("%1/%2对齐度").arg(leftOption, rightOption);
+			alignmentDisplay->setText(alignment);
+		}
+		else {
+			alignmentDisplay->clear();
+		}
+	};
+
+	// 连接单选按钮的信号与槽
+	QObject::connect(leftGroup, QOverload<int>::of(&QButtonGroup::buttonClicked), updateAlignmentDisplay);
+	QObject::connect(rightGroup, QOverload<int>::of(&QButtonGroup::buttonClicked), updateAlignmentDisplay);
+
+	// 连接按钮的信号与槽
+	QObject::connect(confirmButton, &QPushButton::clicked, [&]() {
+		int leftId = leftGroup->checkedId();
+		int rightId = rightGroup->checkedId();
+
+		if (leftId != -1 && rightId != -1) {
+			QString leftOption = leftOptions[leftId];
+			QString rightOption = rightOptions[rightId];
+			QString alignment = QString("%1/%2对齐度").arg(leftOption, rightOption);
+			bool display = true;
+			// 保存对齐度设置
+			qDebug() << "Selected alignment:" << alignment;
+
+			// 这里可以添加保存设置的代码，例如更新配置文件或应用设置
+
+				 // 更新配置文件或应用设置
+			m_configLoader->addNewChildToCategory("A/B面对齐度", alignment, display);
+
+
+
+			//emit m_configLoader->curveDisplayChanged(rightOption, true);
+
+			// 可能需要刷新显示或重新加载配置
+			m_configLoader->loadConfig("path/to/config.json");
+
+			// 同步更新趋势勾选指标和趋势图的曲线名称
+			emit m_configLoader->curveDisplayChanged(alignment, true);
+
+			//addCurve(alignment);
+		}
+
+		dialog.accept(); // 关闭对话框
+	});
+
+	QObject::connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
+
+	dialog.exec();
+
+}
+
+
 QColor colorFromName(const QString &name) {
 	// 使用Qt的qHash函数生成一个基于字符串的哈希值
 	quint32 hashValue = qHash(name);

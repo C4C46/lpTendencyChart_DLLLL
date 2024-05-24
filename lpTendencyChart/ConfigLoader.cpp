@@ -91,6 +91,30 @@ QStringList ConfigLoader::getAllCurveNames() const {
 }
 
 
+QStringList ConfigLoader::getAllCurveNamesExceptParent(const QString& excludedParentName) const {
+	QStringList allCurveNames;
+	if (configDoc.isNull() || !configDoc.isObject()) {
+		return allCurveNames;
+	}
+
+	QJsonObject rootObj = configDoc.object();
+	QJsonArray categories = rootObj["categories"].toArray();
+
+	for (const QJsonValue& categoryVal : categories) {
+		QJsonObject categoryObj = categoryVal.toObject();
+		QString parentName = categoryObj["name"].toString();
+		if (parentName != excludedParentName) {
+			QJsonArray children = categoryObj["children"].toArray();
+			for (const QJsonValue& childVal : children) {
+				QJsonObject childObj = childVal.toObject();
+				allCurveNames.append(childObj["name"].toString()); //获取所有父类名称
+			}
+		}
+	}
+
+	return allCurveNames;
+}
+
 QVariantMap ConfigLoader::getSettingDefaultValue(const QString& settingName) {
 	QVariantMap settingDefaults;
 
@@ -189,11 +213,15 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 			QTreeWidgetItem *childItem = new QTreeWidgetItem(parentItem);
 			childItem->setText(1, childName); // 子项名称也在右侧列
 
-
 			QCheckBox *checkBox = new QCheckBox();
 			checkBox->setChecked(display); // 根据配置文件设置复选框的状态
 			checkBox->setEnabled(selected); // 根据父项的选中状态启用或禁用复选框
 			m_treeWidget->setItemWidget(childItem, 0, checkBox); // 将复选框设置在左侧列
+
+			// 设置子项的缩进级别和字体样式
+			QFont childFont = childItem->font(1);
+			childFont.setPointSize(childFont.pointSize() + 1);
+			childItem->setFont(1, childFont);
 
 			QObject::connect(checkBox, &QCheckBox::toggled, [this, childName](bool checked) {
 				emit curveDisplayChanged(childName, checked);
@@ -359,4 +387,55 @@ void ConfigLoader::updateSetting(const QString &settingName, const QString &key,
 	rootObj["categories"] = categories;
 	configDoc.setObject(rootObj);
 
+}
+
+
+void ConfigLoader::addNewChildToCategory(const QString& categoryName, const QString& childName, bool display) {
+	if (configDoc.isNull() || !configDoc.isObject()) return;
+
+	QJsonObject rootObj = configDoc.object();
+	QJsonArray categories = rootObj["categories"].toArray();
+
+	for (int i = 0; i < categories.size(); ++i) {
+		QJsonObject categoryObj = categories[i].toObject();
+		QString jsonname = categoryObj["name"].toString();
+		qDebug() << "jsonname:" << jsonname;
+		if (categoryObj["name"].toString() == categoryName) {
+			QJsonArray children = categoryObj["children"].toArray();
+			QJsonObject newChild;
+			newChild["name"] = childName;
+			newChild["display"] = display;
+			children.append(newChild);
+			categoryObj["children"] = children;
+			categories[i] = categoryObj;
+
+
+
+
+			// 更新界面
+			QTreeWidgetItem *parentItem = m_treeWidget->topLevelItem(i);
+			QTreeWidgetItem *childItem = new QTreeWidgetItem(parentItem);
+			childItem->setText(1, childName);
+			QFont childFont = childItem->font(1);
+			childFont.setPointSize(childFont.pointSize() + 1); // 设置字体大小
+			childItem->setFont(1, childFont); // 应用字体样式
+
+			QCheckBox *checkBox = new QCheckBox();
+			checkBox->setChecked(display);
+			m_treeWidget->setItemWidget(childItem, 0, checkBox);
+
+			//// 如果需要显示，则添加曲线到图表
+			//if (display) {
+			//	emit curveDisplayChanged(childName, true);
+			//}
+
+			QObject::connect(checkBox, &QCheckBox::toggled, [this, childName](bool checked) {
+				emit curveDisplayChanged(childName, checked);
+			});
+			break;
+		}
+	}
+
+	rootObj["categories"] = categories;
+	configDoc.setObject(rootObj);
 }
