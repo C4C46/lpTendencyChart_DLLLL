@@ -3,6 +3,7 @@
 #include <QTextStream>
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QMessageBox>
 #pragma execution_character_set("utf-8")
 
 ConfigLoader::ConfigLoader(QTreeWidget *treeWidget, QObject *parent)
@@ -402,37 +403,64 @@ void ConfigLoader::addNewChildToCategory(const QString& categoryName, const QStr
 		qDebug() << "jsonname:" << jsonname;
 		if (categoryObj["name"].toString() == categoryName) {
 			QJsonArray children = categoryObj["children"].toArray();
-			QJsonObject newChild;
-			newChild["name"] = childName;
-			newChild["display"] = display;
-			children.append(newChild);
-			categoryObj["children"] = children;
-			categories[i] = categoryObj;
+			// 检查是否已存在同名子类
+			bool childExists = false;
+			for (const QJsonValue& childVal : children) {
+				QJsonObject childObj = childVal.toObject();
+				if (childObj["name"].toString() == childName) {
+					QMessageBox::warning(nullptr, "对齐度设置", "当前对齐度名称已存在！");
+					childExists = true;
+					break;
+				}
+			}
+			if (!childExists)
+			{
+				QJsonObject newChild;
+				newChild["name"] = childName;
+
+				// 获取父类的勾选状态
+				QRadioButton *radioButton = qobject_cast<QRadioButton *>(m_treeWidget->itemWidget(m_treeWidget->topLevelItem(i), 0));
+				bool parentChecked = radioButton && radioButton->isChecked();
+
+
+				newChild["display"] = parentChecked && display;
+
+				children.append(newChild);
+				categoryObj["children"] = children;
+				categories[i] = categoryObj;
 
 
 
 
-			// 更新界面
-			QTreeWidgetItem *parentItem = m_treeWidget->topLevelItem(i);
-			QTreeWidgetItem *childItem = new QTreeWidgetItem(parentItem);
-			childItem->setText(1, childName);
-			QFont childFont = childItem->font(1);
-			childFont.setPointSize(childFont.pointSize() + 1); // 设置字体大小
-			childItem->setFont(1, childFont); // 应用字体样式
+				// 更新界面
+				QTreeWidgetItem *parentItem = m_treeWidget->topLevelItem(i);
+				QTreeWidgetItem *childItem = new QTreeWidgetItem(parentItem);
+				childItem->setText(1, childName);
+				QFont childFont = childItem->font(1);
+				childFont.setPointSize(childFont.pointSize() + 1); // 设置字体大小
+				childItem->setFont(1, childFont); // 应用字体样式
 
-			QCheckBox *checkBox = new QCheckBox();
-			checkBox->setChecked(display);
-			m_treeWidget->setItemWidget(childItem, 0, checkBox);
+				QCheckBox *checkBox = new QCheckBox();
+				checkBox->setChecked(parentChecked && display);
+				checkBox->setEnabled(parentChecked); // 根据父类的状态启用或禁用复选框
+				m_treeWidget->setItemWidget(childItem, 0, checkBox);
 
-			//// 如果需要显示，则添加曲线到图表
-			//if (display) {
-			//	emit curveDisplayChanged(childName, true);
-			//}
+				//// 如果需要显示，则添加曲线到图表
+				//if (display) {
+				//	emit curveDisplayChanged(childName, true);
+				//}
 
-			QObject::connect(checkBox, &QCheckBox::toggled, [this, childName](bool checked) {
-				emit curveDisplayChanged(childName, checked);
-			});
-			break;
+				QObject::connect(checkBox, &QCheckBox::toggled, [this, childName](bool checked) {
+					emit curveDisplayChanged(childName, checked);
+				});
+
+				if (display && parentChecked)
+				{
+					emit curveDisplayChanged(childName, true);
+				}
+				break;
+			}
+
 		}
 	}
 

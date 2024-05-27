@@ -534,13 +534,14 @@ void ChartManager::AlignPBClicked()
 
 			//emit m_configLoader->curveDisplayChanged(rightOption, true);
 
-			// 可能需要刷新显示或重新加载配置
-			m_configLoader->loadConfig("path/to/config.json");
+			//// 可能需要刷新显示或重新加载配置
+			//m_configLoader->loadConfig("Config/Event.json");
 
 			// 同步更新趋势勾选指标和趋势图的曲线名称
 			emit m_configLoader->curveDisplayChanged(alignment, true);
 
 			//addCurve(alignment);
+			//plot->replot();
 		}
 
 		dialog.accept(); // 关闭对话框
