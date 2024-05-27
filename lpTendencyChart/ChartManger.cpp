@@ -429,8 +429,12 @@ void ChartManager::AlignPBClicked()
 	QDialog dialog(m_widget); // 使用当前widget作为父窗口
 	dialog.setWindowTitle("对齐度设置");
 	dialog.resize(650, 500);
-	dialog.setFixedSize(dialog.size());
+	//dialog.setFixedSize(dialog.size());
 
+		// 设置字体大小
+	QFont font = dialog.font();
+	font.setPointSize(14); // 设置字体大小为14点
+	dialog.setFont(font);
 	QGridLayout *gridLayout = new QGridLayout(&dialog);
 
 
@@ -473,14 +477,30 @@ void ChartManager::AlignPBClicked()
 		gridLayout->addWidget(radioButton, i, 1);
 	}
 
-	// 创建显示对齐度的文本框
+	//// 创建显示对齐度的文本框
+	//QLineEdit *alignmentDisplay = new QLineEdit(&dialog);
+	//alignmentDisplay->setReadOnly(true);
+	//gridLayout->addWidget(alignmentDisplay, leftOptions.size(), 0, 1, 2);
+	// 创建显示对齐度的文本框和标签
+	QLabel *alignmentLabel = new QLabel("对齐度名称:", &dialog);
+
 	QLineEdit *alignmentDisplay = new QLineEdit(&dialog);
 	alignmentDisplay->setReadOnly(true);
-	gridLayout->addWidget(alignmentDisplay, leftOptions.size(), 0, 1, 2);
+
+
+	// 创建一个水平布局来包含标签和文本框
+	QHBoxLayout *alignmentLayout = new QHBoxLayout;
+	alignmentLayout->addWidget(alignmentLabel);
+	alignmentLayout->addWidget(alignmentDisplay);
+
+	// 将水平布局添加到网格布局中
+	gridLayout->addLayout(alignmentLayout, leftOptions.size(), 0, 1, 2); // 占据两列
+
 
 	// 创建确定和取消按钮
 	QPushButton *confirmButton = new QPushButton("确定", &dialog);
 	QPushButton *cancelButton = new QPushButton("取消", &dialog);
+
 
 	// 设置按钮的布局
 	QHBoxLayout *buttonLayout = new QHBoxLayout;
