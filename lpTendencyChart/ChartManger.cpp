@@ -451,6 +451,8 @@ void ChartManager::AlignPBClicked()
 	QStringList leftOptions;
 	QStringList rightOptions;
 
+
+
 	for (const QString &name : subCategoryNames)
 	{
 		if (name.startsWith("A"))
@@ -487,7 +489,6 @@ void ChartManager::AlignPBClicked()
 	QLineEdit *alignmentDisplay = new QLineEdit(&dialog);
 	alignmentDisplay->setReadOnly(true);
 
-
 	// 创建一个水平布局来包含标签和文本框
 	QHBoxLayout *alignmentLayout = new QHBoxLayout;
 	alignmentLayout->addWidget(alignmentLabel);
@@ -497,7 +498,8 @@ void ChartManager::AlignPBClicked()
 	gridLayout->addLayout(alignmentLayout, leftOptions.size(), 0, 1, 2); // 占据两列
 
 
-	// 创建确定和取消按钮
+	// 创建删除，确定和取消按钮
+	QPushButton *deleteButton = new QPushButton("删除", &dialog);
 	QPushButton *confirmButton = new QPushButton("确定", &dialog);
 	QPushButton *cancelButton = new QPushButton("取消", &dialog);
 
@@ -505,9 +507,11 @@ void ChartManager::AlignPBClicked()
 	// 设置按钮的布局
 	QHBoxLayout *buttonLayout = new QHBoxLayout;
 	buttonLayout->addStretch(); // 添加弹性空间，使按钮靠右对齐
+	buttonLayout->addWidget(deleteButton);
 	buttonLayout->addWidget(confirmButton);
 	//buttonLayout->addSpacing(10); // 在两个按钮之间添加10像素的间距
 	buttonLayout->addWidget(cancelButton);
+
 
 	// 将按钮布局添加到网格布局的下方
 	gridLayout->addLayout(buttonLayout, subCategoryNames.size() + 1, 0, 1, 2); // 调整行位置以适应新的布局
@@ -564,6 +568,27 @@ void ChartManager::AlignPBClicked()
 			//plot->replot();
 		}
 
+
+		dialog.accept(); // 关闭对话框
+	});
+
+	QObject::connect(deleteButton, &QPushButton::clicked, [alignmentDisplay, this, &dialog]() {
+		QString selectedName = alignmentDisplay->text(); // 从QLineEdit获取当前选中的子类名称
+		if (selectedName.isEmpty()) {
+			QMessageBox::warning(&dialog, "删除错误", "没有选中任何对齐度名称，请选择一个对齐度名称后再尝试删除。");
+			return;
+		}
+
+		// 检查是否存在该名称
+		QStringList allCurveNames = m_configLoader->getAllCurveNames();
+		if (!allCurveNames.contains(selectedName)) {
+			QMessageBox::warning(&dialog, "删除错误", "要删除的对齐度名称不存在，请选择一个有效的对齐度名称后再尝试删除。");
+			return;
+		}
+
+		// 执行删除操作
+		m_configLoader->removeChildFromCategory("A/B面对齐度", selectedName);
+		QMessageBox::information(&dialog, "删除成功", "已成功删除。");
 		dialog.accept(); // 关闭对话框
 	});
 

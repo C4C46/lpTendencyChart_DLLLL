@@ -467,3 +467,57 @@ void ConfigLoader::addNewChildToCategory(const QString& categoryName, const QStr
 	rootObj["categories"] = categories;
 	configDoc.setObject(rootObj);
 }
+
+void ConfigLoader::removeChildFromCategory(const QString& categoryName, const QString& childName) {
+	if (configDoc.isNull() || !configDoc.isObject()) return;
+
+	QJsonObject rootObj = configDoc.object();
+	QJsonArray categories = rootObj["categories"].toArray();
+	bool found = false;
+
+	for (int i = 0; i < categories.size(); ++i) {
+		QJsonObject categoryObj = categories[i].toObject();
+		if (categoryObj["name"].toString() == categoryName) {
+			QJsonArray children = categoryObj["children"].toArray();
+			for (int j = 0; j < children.size(); ++j) {
+				QJsonObject childObj = children[j].toObject();
+				if (childObj["name"].toString() == childName) {
+					children.removeAt(j);
+					categoryObj["children"] = children;
+					categories[i] = categoryObj;
+					found = true;
+					break;
+				}
+			}
+		}
+		if (found) break;
+	}
+
+	if (found) {
+		rootObj["categories"] = categories;
+		configDoc.setObject(rootObj);
+
+		// 更新界面
+		QTreeWidgetItem *parentItem = nullptr;
+		for (int i = 0; i < m_treeWidget->topLevelItemCount(); ++i) {
+			QTreeWidgetItem *item = m_treeWidget->topLevelItem(i);
+			if (item->text(1) == categoryName) {
+				parentItem = item;
+				break;
+			}
+		}
+
+		if (parentItem) {
+			for (int j = 0; j < parentItem->childCount(); ++j) {
+				QTreeWidgetItem *childItem = parentItem->child(j);
+				if (childItem->text(1) == childName) {
+					delete parentItem->takeChild(j); // 正确删除子项
+					break;
+				}
+
+			}
+		}
+		// 通知趋势图组件删除曲线
+		emit curveDisplayChanged(childName, false);
+	}
+}

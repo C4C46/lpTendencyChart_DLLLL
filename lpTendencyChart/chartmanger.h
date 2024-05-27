@@ -23,6 +23,7 @@
 #include <QMouseEvent>
 #include <QHash>
 #include <QButtonGroup>
+#include <QMessageBox>
 #include <QRadioButton>
 #include "ConfigLoader.h"
 #include "ChartUpdaterThread.h"
