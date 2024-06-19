@@ -13,7 +13,14 @@ lpTendencyChart::lpTendencyChart(QWidget *parent)
 
 lpTendencyChart::~lpTendencyChart()
 {
-	
+	if (dataScope)
+	{
+		QStringList ChooseNames = configLoader->getCurveNames();
+		dataScope->saveTableSettings(ChooseNames);
+		dataScope->saveSettingsToFile();
+
+		delete dataScope;
+	}
 
 	if (chartManager)
 		delete chartManager;
@@ -23,11 +30,7 @@ lpTendencyChart::~lpTendencyChart()
 		delete configLoader;
 	}
 		
-	if (dataScope)
-	{
-		dataScope->saveSettingsToFile();
-		delete dataScope;
-	}
+
 		
 
 }

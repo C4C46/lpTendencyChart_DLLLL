@@ -18,6 +18,10 @@ DataScope::DataScope(QTableWidget* tableWidget, QObject* parent)
 	data_tableWidget->horizontalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
 	data_tableWidget->horizontalHeader()->setDropIndicatorShown(true);
 
+	QFont font = data_tableWidget->font();
+	font.setPointSize(12);
+	data_tableWidget->setFont(font);
+
 }
 
 

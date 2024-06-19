@@ -53,6 +53,8 @@ public slots:
 	void onIntervalPBClicked();
 	void AlignPBClicked();
 
+	QString determineParentCategory(const QString & alignmentName);
+	bool isSameCategory(const QString & option1, const QString & option2);
 
 	void addCurve(const QString &curveName); 
 	void onLegendClicked(const QVariant &itemInfo, int index);

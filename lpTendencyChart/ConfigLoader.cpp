@@ -197,6 +197,7 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 
 		QTreeWidgetItem *parentItem = new QTreeWidgetItem(m_treeWidget);
 		parentItem->setText(1, name); // 将名称设置在右侧列
+		parentItem->setToolTip(1, name);//设置工具提示完整内容
 
 		QRadioButton *radioButton = new QRadioButton();
 		m_treeWidget->setItemWidget(parentItem, 0, radioButton); // 将单选按钮设置在左侧列
@@ -215,7 +216,7 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 
 			QTreeWidgetItem *childItem = new QTreeWidgetItem(parentItem);
 			childItem->setText(1, childName); // 子项名称也在右侧列
-
+			childItem->setToolTip(1, childName);
 			QCheckBox *checkBox = new QCheckBox();
 			checkBox->setChecked(display); // 根据配置文件设置复选框的状态
 			checkBox->setEnabled(selected); // 根据父项的选中状态启用或禁用复选框
@@ -225,6 +226,7 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 			QFont childFont = childItem->font(1);
 			childFont.setPointSize(childFont.pointSize() + 1);
 			childItem->setFont(1, childFont);
+	
 
 			QObject::connect(checkBox, &QCheckBox::toggled, [this, childName](bool checked) {
 				QStringList selectedCurveNames = getCurveNames();

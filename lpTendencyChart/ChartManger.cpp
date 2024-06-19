@@ -544,6 +544,14 @@ void ChartManager::AlignPBClicked()
 		if (leftId != -1 && rightId != -1) {
 			QString leftOption = leftOptions[leftId];
 			QString rightOption = rightOptions[rightId];
+
+
+			// 检查两个选项是否属于同一类别
+			if (!isSameCategory(leftOption, rightOption)) {
+				QMessageBox::warning(&dialog, "错误", "左右两侧的选项必须属于同一类别。");
+				return;
+			}
+
 			QString alignment = QString("%1/%2对齐度").arg(leftOption, rightOption);
 			bool display = true;
 			// 保存对齐度设置
@@ -607,16 +615,49 @@ void ChartManager::AlignPBClicked()
 		}
 
 		// 执行删除操作
-		m_configLoader->removeChildFromCategory("A/B面对齐度", selectedName);
+		QString parentCategory = determineParentCategory(selectedName);
+		m_configLoader->removeChildFromCategory(parentCategory, selectedName);
 		QMessageBox::information(&dialog, "删除成功", "已成功删除。");
 		dialog.accept(); // 关闭对话框
 	});
+
+
+
 
 	QObject::connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
 
 	dialog.exec();
 
 }
+
+
+QString ChartManager::determineParentCategory(const QString& alignmentName) {
+	if (alignmentName.contains("陶瓷区")) {
+		return "陶瓷区对齐度";
+	}
+	else if (alignmentName.contains("极耳区")) {
+		return "极耳区对齐度";
+	}
+	else if (alignmentName.contains("电浆区")) {
+		return "电浆区对齐度";
+	}
+	else {
+		return "其他对齐度";
+	}
+}
+
+bool ChartManager::isSameCategory(const QString & option1, const QString & option2)
+{
+	QStringList categories = { "陶瓷", "电浆", "极耳区" };
+	for (const QString &category : categories) {
+		if (option1.contains(category) && option2.contains(category)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+
 
 
 QColor colorFromName(const QString &name) {
