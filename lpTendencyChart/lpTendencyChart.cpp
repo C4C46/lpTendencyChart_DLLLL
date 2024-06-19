@@ -13,13 +13,22 @@ lpTendencyChart::lpTendencyChart(QWidget *parent)
 
 lpTendencyChart::~lpTendencyChart()
 {
-	configLoader->saveConfig("Config/Event.json");
+	
+
 	if (chartManager)
 		delete chartManager;
 	if (configLoader)
+	{
+		configLoader->saveConfig("Config/Event.json");
 		delete configLoader;
+	}
+		
 	if (dataScope)
+	{
+		dataScope->saveSettingsToFile();
 		delete dataScope;
+	}
+		
 
 }
 
@@ -31,7 +40,7 @@ void lpTendencyChart::init()
 
 	QStringList curveNames = configLoader->getCurveNames(); // 获取曲线名称
 	QStringList allCurveNames = configLoader->getAllCurveNames(); // 获取所有曲线名称
-
+	QStringList ChooseNames = configLoader->getCurveNames();
 			// 创建一个线程来处理所有数据
 	chartUpdaterThread = new ChartUpdaterThread(this, allCurveNames);
 
@@ -40,9 +49,11 @@ void lpTendencyChart::init()
 	/*chartManager->start();*/
 
 	// 创建数据显示区域
-	dataScope = new DataScope(ui->tableWidget, this);
-	dataScope->setColumnNames(allCurveNames);
-
+	if (!dataScope) {
+		dataScope = new DataScope(ui->tableWidget, this);
+	}
+	dataScope->setColumnNames(ChooseNames);
+	dataScope->loadSettingsFromFile();
 
 	ui->Toggle_PB->setText("趋势指标勾选隐藏");
 	connect(configLoader, &ConfigLoader::curveDisplayChanged, chartManager, &ChartManager::onCurveDisplayChanged);
@@ -50,6 +61,7 @@ void lpTendencyChart::init()
 	connect(ui->Interval_PB, &QPushButton::clicked, this, &lpTendencyChart::handleIntervalPBClicked);
 	connect(ui->Toggle_PB, &QPushButton::clicked, this, &lpTendencyChart::toggleTableVisibility);
 	connect(ui->Align_PB, &QPushButton::clicked, this, &lpTendencyChart::AlianPBClicked);
+	connect(configLoader, &ConfigLoader::curveNamesChanged, dataScope, &DataScope::setColumnNames);
 }
 
 
@@ -74,6 +86,38 @@ void lpTendencyChart::AlianPBClicked()
 		chartManager->AlignPBClicked();//用于显示对齐度设置对话框
 	}
 }
+
+
+
+
+void lpTendencyChart::processLithiumAllRegionInfo(const LithiumAllRegionInfo_Tag &info) {
+	// 定义一个lambda函数来处理QMap数据
+	auto processMap = [this](const QMap<qint64, QMap<QString, double>> &map) {
+		for (auto it = map.begin(); it != map.end(); ++it) {
+			qint64 x = it.key();  // 米数，对应X值
+			const QMap<QString, double> &innerMap = it.value();
+			for (auto innerIt = innerMap.begin(); innerIt != innerMap.end(); ++innerIt) {
+				QString curveName = innerIt.key();  // 通道名称，作为curveName
+				double y = innerIt.value();  // 通道宽度，对应Y值
+				// 调用updateData方法更新数据
+				updateData(curveName, x, y);
+			}
+		}
+	};
+
+	// 处理每个区域的数据
+	processMap(info.firstcoorNameEregioninfowidth);
+	processMap(info.secondcoorNameEregioninfowidth);
+	processMap(info.firstcoorNameEregioninfowidth);
+	processMap(info.secondcoorNameEregioninfowidth);
+	processMap(info.firstcoorNameEregioninfowidth);
+	processMap(info.secondcoorNameEregioninfowidth);
+	processMap(info.firstcoorNamecalculatecenterinfowidth);
+	processMap(info.secondcoorNamecalculatecenterinfowidth);
+	processMap(info.contactNameAndAlignment);
+}
+
+
 
 void lpTendencyChart::updateData(const QString &curveName, double x, double y) {
 	//qDebug() << "Updating data for" << curveName << "with X:" << x << "Y:" << y;

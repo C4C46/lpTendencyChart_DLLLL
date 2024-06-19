@@ -31,6 +31,7 @@ QStringList ConfigLoader::getCurveNames() const {
 			}
 		}
 	}
+	emit curveNamesChanged(selectedCurveNames); // 发射信号
 	return selectedCurveNames;
 }
 
@@ -92,7 +93,7 @@ QStringList ConfigLoader::getAllCurveNames() const {
 }
 
 
-QStringList ConfigLoader::getAllCurveNamesExceptParent(const QString& excludedParentName) const {
+QStringList ConfigLoader::getAllCurveNamesExceptParent() const {
 	QStringList allCurveNames;
 	if (configDoc.isNull() || !configDoc.isObject()) {
 		return allCurveNames;
@@ -104,11 +105,12 @@ QStringList ConfigLoader::getAllCurveNamesExceptParent(const QString& excludedPa
 	for (const QJsonValue& categoryVal : categories) {
 		QJsonObject categoryObj = categoryVal.toObject();
 		QString parentName = categoryObj["name"].toString();
-		if (parentName != excludedParentName) {
+		// 排除所有包含“对齐度”字样的父类名称
+		if (!parentName.contains("对齐度")) {
 			QJsonArray children = categoryObj["children"].toArray();
 			for (const QJsonValue& childVal : children) {
 				QJsonObject childObj = childVal.toObject();
-				allCurveNames.append(childObj["name"].toString()); //获取所有父类名称
+				allCurveNames.append(childObj["name"].toString());
 			}
 		}
 	}
@@ -174,8 +176,8 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 
 	configDoc = doc;
 
-	// 打印整个文档以验证其内容
-	qDebug() << "Config loaded:" << configDoc.toJson(QJsonDocument::Compact);
+	//// 打印整个文档以验证其内容
+	//qDebug() << "Config loaded:" << configDoc.toJson(QJsonDocument::Compact);
 
 	QJsonObject jsonObject = doc.object();
 	QJsonArray categoriesArray = jsonObject["categories"].toArray();
@@ -225,6 +227,7 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 			childItem->setFont(1, childFont);
 
 			QObject::connect(checkBox, &QCheckBox::toggled, [this, childName](bool checked) {
+				QStringList selectedCurveNames = getCurveNames();
 				emit curveDisplayChanged(childName, checked);
 			});
 		}

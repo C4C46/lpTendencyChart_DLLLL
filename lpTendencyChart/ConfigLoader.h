@@ -21,7 +21,7 @@ class ConfigLoader :
 
 public:
 	explicit ConfigLoader(QTreeWidget *treeWidget, QObject *parent = nullptr);
-	QStringList getAllCurveNamesExceptParent(const QString & excludedParentName) const;
+	QStringList getAllCurveNamesExceptParent() const;
 	QVariantMap getSettingDefaultValue(const QString & settingName);
 	void loadConfig(const QString &filePath);
 	void saveConfig(const QString &filePath); // 添加保存配置的声明
@@ -41,6 +41,7 @@ signals:
 	void yAxisRangeChanged(const QVariantList &yAxisRange);
 	void warningValueChanged(const QVariantList &warningValue);
 	void alarmValueChanged(const QVariantList &alarmValue);
+	void curveNamesChanged(const QStringList &newCurveNames) const;
 
 private:
 	QTreeWidget *m_treeWidget;

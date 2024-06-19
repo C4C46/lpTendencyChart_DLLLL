@@ -6,6 +6,34 @@
 #include "ConfigLoader.h"
 #include "DataScope.h"
 
+
+struct LithiumAllRegionInfo_Tag
+{
+
+	//按照每米进行整合
+	int msgId = -1;//消息ID
+
+	//电浆
+	QMap<qint64, QMap<QString, double>> firstcoorNameEregioninfowidth;//<米数, <通道, 通道宽度>>
+	QMap<qint64, QMap<QString, double>> secondcoorNameEregioninfowidth;
+
+	//陶瓷
+	QMap<qint64, QMap<QString, double>> firstcoorNameceramicinfowidth;
+	QMap<qint64, QMap<QString, double>> secondcoorNameceramicinfowidth;
+
+	//极耳
+	QMap<qint64, QMap<QString, double>> firstcoorNameelectrodetabinfowidth;
+	QMap<qint64, QMap<QString, double>> secondcoorNameelectrodetabinfowidth;
+
+
+	QMap<qint64, QMap<QString, double>> firstcoorNamecalculatecenterinfowidth;//<米数,居中度>
+	QMap<qint64, QMap<QString, double>> secondcoorNamecalculatecenterinfowidth;
+
+	QMap<qint64, QMap<QString, double>>contactNameAndAlignment;
+
+};
+
+
 class Ui_lpTendencyClass;
 class ChartManger;
 class ConfigLoader;
@@ -29,11 +57,15 @@ public slots:
 	void toggleTableVisibility();
 	void AlianPBClicked();
 
+
+
+	void processLithiumAllRegionInfo(const LithiumAllRegionInfo_Tag & info);
+
 private:
 	Ui_lpTendencyClass *ui{ nullptr };
 	ChartManager *chartManager{ nullptr };
 	ConfigLoader *configLoader{ nullptr };
 	ChartUpdaterThread *chartUpdaterThread;
-	DataScope *dataScope;
+	DataScope *dataScope{nullptr};
 
 };

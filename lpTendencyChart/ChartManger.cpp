@@ -439,7 +439,7 @@ void ChartManager::AlignPBClicked()
 
 
 	// 获取除了“对齐度”之外的所有子类名称
-	QStringList subCategoryNames = m_configLoader->getAllCurveNamesExceptParent("A/B面对齐度");
+	QStringList subCategoryNames = m_configLoader->getAllCurveNamesExceptParent();
 
 
 	// 创建左侧和右侧的单选按钮组
@@ -455,11 +455,11 @@ void ChartManager::AlignPBClicked()
 
 	for (const QString &name : subCategoryNames)
 	{
-		if (name.startsWith("A"))
+		if (name.contains("A"))
 		{
 			leftOptions.append(name);
 		}
-		else if (name.startsWith("B"))
+		else if (name.contains("B"))
 		{
 			rightOptions.append(name);
 		}
@@ -549,10 +549,30 @@ void ChartManager::AlignPBClicked()
 			// 保存对齐度设置
 			qDebug() << "Selected alignment:" << alignment;
 
+
+
+			// 根据对齐度名称确定应该添加到哪个父类别
+			QString parentCategory;
+			if (alignment.contains("陶瓷区")) {
+				parentCategory = "陶瓷区对齐度";
+			}
+			else if (alignment.contains("极耳区")) {
+				parentCategory = "极耳区对齐度";
+			}
+			else if (alignment.contains("电浆区")) {
+				parentCategory = "电浆区对齐度";
+			}
+			else {
+				// 默认分类或错误处理
+				parentCategory = "其他对齐度";
+			}
+
+			// 更新配置文件或应用设置
+			m_configLoader->addNewChildToCategory(parentCategory, alignment, display);
 			// 这里可以添加保存设置的代码，例如更新配置文件或应用设置
 
-				 // 更新配置文件或应用设置
-			m_configLoader->addNewChildToCategory("A/B面对齐度", alignment, display);
+			//	 // 更新配置文件或应用设置
+			//m_configLoader->addNewChildToCategory("A/B面对齐度", alignment, display);
 
 
 

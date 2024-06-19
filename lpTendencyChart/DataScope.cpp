@@ -12,12 +12,22 @@ DataScope::DataScope(QTableWidget* tableWidget, QObject* parent)
 	data_tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	data_tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
 
-
+	// 允许列拖放重排
+	data_tableWidget->horizontalHeader()->setSectionsMovable(true);
+	data_tableWidget->horizontalHeader()->setDragEnabled(true);
+	data_tableWidget->horizontalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
+	data_tableWidget->horizontalHeader()->setDropIndicatorShown(true);
 
 }
 
+
+
 void DataScope::setColumnNames(const QStringList & names)
 {
+
+
+	saveTableSettings(m_columnNames);
+
 
 	m_columnNames = names;
 	data_tableWidget->setColumnCount(m_columnNames.size() + 1); // 加1是因为第一列是X值
@@ -28,37 +38,18 @@ void DataScope::setColumnNames(const QStringList & names)
 	// 隐藏行号
 	data_tableWidget->verticalHeader()->setVisible(false);
 
-	//data_tableWidget->setColumnWidth(0, 100); // 设置第一列的固定宽度
-	//data_tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // 第一列宽度固定
-	//// 设置其余列为可交互的拉伸模式
-	//for (int i = 1; i < data_tableWidget->columnCount(); ++i) {
-	//	data_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
-	//}
+	data_tableWidget->setColumnWidth(0, 100); // 设置第一列的固定宽度
+	data_tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // 第一列宽度固定
 
-	//  // 设置最后一列顶满表格
- //   data_tableWidget->horizontalHeader()->setSectionResizeMode(data_tableWidget->columnCount() - 1, QHeaderView::Stretch);
-
-	//int lastColumnIndex = data_tableWidget->columnCount() - 1;
-	//data_tableWidget->horizontalHeader()->setSectionResizeMode(lastColumnIndex, QHeaderView::Stretch);
-	//data_tableWidget->horizontalHeader()->resizeSection(lastColumnIndex, 200); // 设置初始宽度为 150 像素
-	// 设置列宽
 	QFontMetrics metrics(data_tableWidget->font());
-	int minWidth = 100; // 最小宽度
-	for (int i = 0; i < headers.size(); ++i) {
+	int minWidth = 220; // 最小宽度
+	for (int i = 1; i < headers.size(); ++i) {
 		int width = metrics.width(headers[i]) + 20; // 加20像素留白
 		width = qMax(width, minWidth); // 确保不小于最小宽度
 		data_tableWidget->setColumnWidth(i, width);
-		if (i < headers.size() - 1) {
-			data_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
-		}
-		else {
-			data_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
-		}
+		data_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Interactive);
+	
 	}
-	//// 设置最后一列顶满表格
-	//int lastColumnIndex = data_tableWidget->columnCount() - 1;
-	//data_tableWidget->horizontalHeader()->setSectionResizeMode(lastColumnIndex, QHeaderView::Stretch);
-
 
 	// 设置工具提示显示完整的列名称
 	for (int i = 0; i < headers.size(); ++i) {
@@ -69,7 +60,11 @@ void DataScope::setColumnNames(const QStringList & names)
 		}
 		headerItem->setToolTip(headers[i]);
 	}
+
+	loadTableSettings(m_columnNames);
 }
+
+
 
 
 void DataScope::addData(const QString &curveName, double x, double y, const QVariantList &warningValue, const QVariantList &alarmValue)
@@ -152,3 +147,62 @@ bool DataScope::eventFilter(QObject *obj, QEvent *event) {
 	}
 	return QObject::eventFilter(obj, event);
 }
+
+void DataScope::saveTableSettings(const QStringList& identifiers) {
+	QString identifier = identifiers.join("_");
+	qDebug() << "Saving settings for identifier:" << identifier;
+	settingsCache["DataTableSettings_" + identifier + "_ColumnWidths"].clear();
+	settingsCache["DataTableSettings_" + identifier + "_ColumnPositions"].clear();
+
+	QVariantList widths, positions;
+	for (int i = 0; i < data_tableWidget->columnCount(); ++i) {
+		widths << data_tableWidget->columnWidth(i);
+		positions << data_tableWidget->horizontalHeader()->visualIndex(i);
+	}
+	settingsCache["DataTableSettings_" + identifier + "_ColumnWidths"] = widths;
+	settingsCache["DataTableSettings_" + identifier + "_ColumnPositions"] = positions;
+}
+
+void DataScope::loadTableSettings(const QStringList& identifiers) {
+	QString identifier = identifiers.join("_");
+	qDebug() << "Loading settings for identifier:" << identifier;
+	QVariantList widths = settingsCache["DataTableSettings_" + identifier + "_ColumnWidths"].toList();
+	QVariantList positions = settingsCache["DataTableSettings_" + identifier + "_ColumnPositions"].toList();
+
+	for (int i = 0; i < widths.size(); ++i) {
+		data_tableWidget->setColumnWidth(i, widths[i].toInt());
+	}
+	for (int i = 0; i < positions.size(); ++i) {
+		data_tableWidget->horizontalHeader()->moveSection(data_tableWidget->horizontalHeader()->visualIndex(i), positions[i].toInt());
+	}
+
+}
+
+void DataScope::loadSettingsFromFile() {
+	QString settingsFile = QDir(QCoreApplication::applicationDirPath()).filePath("settings.ini");
+	QSettings settings(settingsFile, QSettings::IniFormat);
+	settings.beginGroup("DataTableSettings");
+	settingsCache = settings.value("SettingsCache").toMap();
+	m_columnNames = settings.value("SelectedSubclassNames").toStringList();  // 加载列名
+
+	settings.endGroup();
+	qDebug() << "Settings loaded from file:" << settingsFile;
+	qDebug() << "SettingsCache size:" << settingsCache.size();
+
+	loadTableSettings(m_columnNames);
+
+}
+
+void DataScope::saveSettingsToFile() {
+	QString settingsFile = QDir(QCoreApplication::applicationDirPath()).filePath("settings.ini");
+	QSettings settings(settingsFile, QSettings::IniFormat);
+	settings.beginGroup("DataTableSettings");
+
+	settings.setValue("SelectedSubclassNames", m_columnNames);
+	settings.setValue("SettingsCache", settingsCache);
+	settings.endGroup();
+	qDebug() << "Settings saved to file:" << settingsFile;
+	qDebug() << "SettingsCache size:" << settingsCache.size();
+}
+
+
