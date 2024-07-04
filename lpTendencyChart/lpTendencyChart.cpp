@@ -13,6 +13,11 @@ lpTendencyChart::lpTendencyChart(QWidget *parent)
 
 lpTendencyChart::~lpTendencyChart()
 {
+	if (chartUpdaterThread) {
+		chartUpdaterThread->stopRunning();
+		chartUpdaterThread->wait(); // 确保线程已经完全停止
+		delete chartUpdaterThread;
+	}
 	if (dataScope)
 	{
 		QStringList ChooseNames = configLoader->getCurveNames();
@@ -49,6 +54,8 @@ void lpTendencyChart::init()
 
 	chartManager = new ChartManager(this, ui->Chartwidget, curveNames, 
 		configLoader, chartUpdaterThread);
+
+	chartUpdaterThread->start();
 	/*chartManager->start();*/
 
 	// 创建数据显示区域

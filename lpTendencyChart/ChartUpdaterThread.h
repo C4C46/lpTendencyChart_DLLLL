@@ -9,6 +9,7 @@
 #include <QTime>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QWaitCondition>
 class ChartUpdaterThread : public QThread{
 	Q_OBJECT
 
@@ -43,6 +44,7 @@ private:
 		double y;
 	};
 	QList<DataPoint> dataPoints;
-
+	QWaitCondition cond;
+	QList<QJsonObject> dataBuffer; // 缓存接收到的数据
 };
 

@@ -154,7 +154,7 @@ bool DataScope::eventFilter(QObject *obj, QEvent *event) {
 
 void DataScope::saveTableSettings(const QStringList& identifiers) {
 	QString identifier = identifiers.join("_");
-	qDebug() << "Saving settings for identifier:" << identifier;
+	//qDebug() << "Saving settings for identifier:" << identifier;
 	settingsCache["DataTableSettings_" + identifier + "_ColumnWidths"].clear();
 	settingsCache["DataTableSettings_" + identifier + "_ColumnPositions"].clear();
 
@@ -169,7 +169,7 @@ void DataScope::saveTableSettings(const QStringList& identifiers) {
 
 void DataScope::loadTableSettings(const QStringList& identifiers) {
 	QString identifier = identifiers.join("_");
-	qDebug() << "Loading settings for identifier:" << identifier;
+	//qDebug() << "Loading settings for identifier:" << identifier;
 	QVariantList widths = settingsCache["DataTableSettings_" + identifier + "_ColumnWidths"].toList();
 	QVariantList positions = settingsCache["DataTableSettings_" + identifier + "_ColumnPositions"].toList();
 

@@ -138,7 +138,7 @@ double ChartManager::adjustXValue(double originalX) {
 }
 
 void ChartManager::onChartUpdate(const QString &curveName, double x, double y) {
-	if (x >= 3000) {
+	if (x >= 30000) {
 		// 清除所有曲线的数据
 		for (auto &curve : curves) {
 			xDataMap[curve->title().text()].clear();
