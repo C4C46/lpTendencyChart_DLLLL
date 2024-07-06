@@ -22,9 +22,33 @@ DataScope::DataScope(QTableWidget* tableWidget, QObject* parent)
 	font.setPointSize(12);
 	data_tableWidget->setFont(font);
 
+	//updateTimer = new QTimer(this);
+	//connect(updateTimer, &QTimer::timeout, this, &DataScope::batchUpdateTable);
+	//updateTimer->start(1000); // 每1000毫秒（1秒）触发一次
+
+	qRegisterMetaType< QMap<QString, QList<QPair<double, QPair<double, QVariantList>>>>>("QMap<QString, QList<QPair<double, QPair<double, QVariantList>>>>");
+	m_dataScopeThread = new lpDataScopeThread();
+	m_thread = new QThread(this);
+	m_dataScopeThread->moveToThread(m_thread);
+
+	connect(this, &DataScope::sgDataCache, m_dataScopeThread, &lpDataScopeThread::onDataCache);
+	connect(m_dataScopeThread, &lpDataScopeThread::sgSendData, this, &DataScope::onSendData);
+	connect(m_thread, &QThread::started, m_dataScopeThread, &lpDataScopeThread::process);
+
+	m_thread->start();
+
 }
 
 
+
+DataScope::~DataScope()
+{
+	m_thread->quit();
+	m_thread->wait();
+	delete m_dataScopeThread;
+
+	//updateTimer->stop();
+}
 
 void DataScope::setColumnNames(const QStringList & names)
 {
@@ -72,51 +96,112 @@ void DataScope::setColumnNames(const QStringList & names)
 
 
 void DataScope::addData(const QString &curveName, double x, double y, const QVariantList &warningValue, const QVariantList &alarmValue)
+
+{    // 将数据添加到缓存中
+	dataCache[curveName].append(qMakePair(x, qMakePair(y, QVariantList{ warningValue, alarmValue })));
+
+	hasNewData = true; // 设置有新数据的标志
+	emit sgDataCache(dataCache);
+
+}
+
+//
+//void DataScope::batchUpdateTable() {
+//	if (!hasNewData)
+//	{
+//		return;
+//	}
+//
+//	for (auto &curveName : dataCache.keys()) {
+//		for (auto &data : dataCache[curveName]) {
+//			double x = data.first;
+//			double y = data.second.first;
+//			QVariantList warningValue = data.second.second[0].toList();
+//			QVariantList alarmValue = data.second.second[1].toList();
+//
+//			int columnIndex = m_columnNames.indexOf(curveName) + 1;
+//			if (columnIndex <= 0) continue;
+//
+//			int existingRow = -1;
+//			for (int i = 0; i < data_tableWidget->rowCount(); ++i) {
+//				if (data_tableWidget->item(i, 0) && qFuzzyCompare(data_tableWidget->item(i, 0)->text().toDouble(), x)) {
+//					existingRow = i;
+//					break;
+//				}
+//			}
+//
+//			if (existingRow == -1) {
+//				existingRow = data_tableWidget->rowCount();
+//				data_tableWidget->insertRow(existingRow);
+//				data_tableWidget->setItem(existingRow, 0, new QTableWidgetItem(QString::number(x)));
+//			}
+//
+//			QTableWidgetItem *item = new QTableWidgetItem(QString::number(y));
+//			// 设置背景颜色根据警告和报警值
+//			if (!alarmValue.isEmpty() && (y > alarmValue[0].toDouble() || y < alarmValue[1].toDouble())) {
+//				item->setBackground(Qt::red);
+//			}
+//			else if (!warningValue.isEmpty() && (y > warningValue[0].toDouble() || y < warningValue[1].toDouble())) {
+//				item->setBackground(QColor(255, 165, 0));
+//			}
+//			else {
+//				item->setBackground(Qt::white);
+//			}
+//
+//			data_tableWidget->setItem(existingRow, columnIndex, item);
+//		}
+//	}
+//
+//	reloadCount++;
+//	dataCache.clear(); // 清空缓存
+//	if (autoScrollEnabled) {
+//		data_tableWidget->scrollToBottom();
+//	}
+//	hasNewData = false;
+//	qDebug() << "表格重载次数：" << reloadCount;
+//}
+
+//数据更新
+void DataScope::onSendData(QString DataName,double xData,double yData, QVariantList warningValue, QVariantList AlarmingValue)
 {
-	int columnIndex = m_columnNames.indexOf(curveName) + 1; // 加1是因为第一列是X值
-	if (columnIndex <= 0) {
-		// 如果找不到对应的列名，直接返回
-		return;
-	}
-	// 查找是否已存在该x值的行
+
+
+	int columnIndex = m_columnNames.indexOf(DataName) + 1;
+	if (columnIndex <= 0) return;
+
 	int existingRow = -1;
 	for (int i = 0; i < data_tableWidget->rowCount(); ++i) {
-		if (data_tableWidget->item(i, 0) && qFuzzyCompare(data_tableWidget->item(i, 0)->text().toDouble(), x)) {
+		if (data_tableWidget->item(i, 0) && qFuzzyCompare(data_tableWidget->item(i, 0)->text().toDouble(), xData)) {
 			existingRow = i;
 			break;
 		}
 	}
-
-	if (existingRow == -1) { // 如果x值不存在，添加新行
+	if (existingRow == -1) {
 		existingRow = data_tableWidget->rowCount();
 		data_tableWidget->insertRow(existingRow);
-		data_tableWidget->setItem(existingRow, 0, new QTableWidgetItem(QString::number(x))); // 设置X值
+		data_tableWidget->setItem(existingRow, 0, new QTableWidgetItem(QString::number(xData)));
 	}
 
-	QTableWidgetItem *item = new QTableWidgetItem(QString::number(y)); // 创建新项设置Y值
-
-
-		// 先检查报警值范围
-	if (!alarmValue.isEmpty() && (y > alarmValue[0].toDouble() || y < alarmValue[1].toDouble())) {
-		item->setBackground(Qt::red); // 设置背景为红色
+	QTableWidgetItem *item = new QTableWidgetItem(QString::number(yData));
+	// 设置背景颜色根据警告和报警值
+	if (!AlarmingValue.isEmpty() && (yData > AlarmingValue[0].toDouble() || yData < AlarmingValue[1].toDouble())) {
+		item->setBackground(Qt::red);
 	}
-	// 然后检查预警值范围
-	else if (!warningValue.isEmpty() && (y > warningValue[0].toDouble() || y < warningValue[1].toDouble())) {
-		item->setBackground(QColor(255, 165, 0)); // 设置背景为橙色
+	else if (!warningValue.isEmpty() && (yData > warningValue[0].toDouble() || yData < warningValue[1].toDouble())) {
+		item->setBackground(QColor(255, 165, 0));
 	}
-	// 否则设置为正常颜色
 	else {
-		item->setBackground(Qt::white); // 或者使用 item->setBackground(QBrush()); 来使用默认颜色
+		item->setBackground(Qt::white);
 	}
 
+	data_tableWidget->setItem(existingRow, columnIndex, item);
 
-	data_tableWidget->setItem(existingRow, columnIndex, item); // 更新对应列的Y值
 
 	if (autoScrollEnabled) {
 		data_tableWidget->scrollToBottom();
 	}
-}
 
+}
 
 bool DataScope::eventFilter(QObject *obj, QEvent *event) {
 	if (obj == data_tableWidget->verticalScrollBar()) {

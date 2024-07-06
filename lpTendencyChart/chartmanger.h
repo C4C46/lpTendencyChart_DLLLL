@@ -25,6 +25,7 @@
 #include <QButtonGroup>
 #include <QMessageBox>
 #include <QRadioButton>
+#include <QTimer>
 #include "ConfigLoader.h"
 #include "ChartUpdaterThread.h"
 
@@ -70,6 +71,8 @@ public slots:
 
 	void updateSliderPosition();
 
+	void batchUpdateChart(); // 批量更新图表的方法
+
 private:
 	QWidget *m_widget; 
 	QwtPlot *plot; 
@@ -100,6 +103,11 @@ private:
 	bool isViewingHistory = false;
 
 	QSlider *m_slider;//趋势图滚动条
+	int replotCount = 0;
 
+
+	QTimer *updateTimer; // 用于批量更新图表
+
+	bool hasNewData = false;
 };
 

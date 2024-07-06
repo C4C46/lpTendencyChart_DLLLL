@@ -108,12 +108,14 @@
     <QtMoc Include="ChartUpdaterThread.h" />
     <QtMoc Include="ConfigLoader.h" />
     <QtMoc Include="DataScope.h" />
+    <QtMoc Include="lpDataScopeThread.h" />
     <ClInclude Include="lptendencychart_global.h" />
     <QtMoc Include="lpTendencyChart.h" />
     <ClCompile Include="ChartManger.cpp" />
     <ClCompile Include="ChartUpdaterThread.cpp" />
     <ClCompile Include="ConfigLoader.cpp" />
     <ClCompile Include="DataScope.cpp" />
+    <ClCompile Include="lpDataScopeThread.cpp" />
     <ClCompile Include="lpTendencyChart.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

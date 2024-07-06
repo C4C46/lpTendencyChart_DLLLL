@@ -46,6 +46,9 @@
     <QtMoc Include="DataScope.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="lpDataScopeThread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChartManger.cpp">
@@ -58,6 +61,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DataScope.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lpDataScopeThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -102,6 +102,10 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 	connect(m_configLoader, &ConfigLoader::alarmValueChanged, this, &ChartManager::updateAlarmValue);
 	installEventFilters();
 
+	updateTimer = new QTimer(this);
+	connect(updateTimer, &QTimer::timeout, this, &ChartManager::batchUpdateChart);
+	updateTimer->start(1000); // 每1000毫秒（1秒）触发一次
+
 	//plot->replot(); // 重绘图表以应用新的轴间隔
 
 }
@@ -115,6 +119,8 @@ ChartManager::~ChartManager() {
 	//	delete updaterThread;
 	//	updaterThread = nullptr;
 	//}
+
+	updateTimer->stop();
 
 }
 
@@ -162,12 +168,6 @@ void ChartManager::onChartUpdate(const QString &curveName, double x, double y) {
 	xDataMap[curveName] << x;
 	yDataMap[curveName] << y;
 
-	for (auto &curve : curves) {
-		if (curve->title().text() == curveName) {
-			curve->setSamples(xDataMap[curveName], yDataMap[curveName]); // 更新指定曲线的数据点
-			break;
-		}
-	}
 
 
 
@@ -181,13 +181,6 @@ void ChartManager::onChartUpdate(const QString &curveName, double x, double y) {
 			plot->setAxisScale(QwtPlot::xBottom, xMinNew, xMaxNew);
 		}
 	}
-	//	// 自动更新x轴范围以显示最新的数据
-	//double xMaxCurrent = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-	//if (x >= xMaxCurrent) {
-	//	double xMinNew = xMaxCurrent; // 将当前的最大值设置为新的最小值
-	//	double xMaxNew = xMinNew + 50; // 假设一次显示50m的数据
-	//	plot->setAxisScale(QwtPlot::xBottom, xMinNew, xMaxNew);
-	//}
 
 
 	// 更新数据点后，调整滑动条的最大值
@@ -201,9 +194,28 @@ void ChartManager::onChartUpdate(const QString &curveName, double x, double y) {
     }
 
 
+	hasNewData = true; // 设置有新数据的标志
+}
+
+
+void ChartManager::batchUpdateChart() {
+
+	if (!hasNewData) {
+		return; // 如果没有新数据，则不进行重绘
+	}
+
+	for (auto &curve : curves) {
+		QString curveName = curve->title().text();
+		if (xDataMap.contains(curveName) && yDataMap.contains(curveName)) {
+			curve->setSamples(xDataMap[curveName], yDataMap[curveName]);
+		}
+	}
+
 	plot->replot(); // 重绘图表
-	//	// 更新滑动条位置
-	//updateSliderPosition();
+	replotCount++;
+	qDebug() << "图表重绘次数：" << replotCount;
+
+	hasNewData = false;
 }
 
 //参数设置
