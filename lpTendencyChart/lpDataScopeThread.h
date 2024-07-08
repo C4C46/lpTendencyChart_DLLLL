@@ -4,14 +4,16 @@
 #include <QVariantList>
 #include <QMutexLocker>
 #include <QMutex>
+#include <QDebug>
 class lpDataScopeThread :public QObject
 {
 	Q_OBJECT
 public:
 	lpDataScopeThread();
+
 	~lpDataScopeThread();
 
-	
+	void stopThread();
 
 signals:
 	void sgSendData(QString DataName, double xData, double yData, QVariantList warningValue, QVariantList AlarmingValue);

@@ -31,8 +31,12 @@ DataScope::DataScope(QTableWidget* tableWidget, QObject* parent)
 	m_thread = new QThread(this);
 	m_dataScopeThread->moveToThread(m_thread);
 
-	connect(this, &DataScope::sgDataCache, m_dataScopeThread, &lpDataScopeThread::onDataCache);
-	connect(m_dataScopeThread, &lpDataScopeThread::sgSendData, this, &DataScope::onSendData);
+	//connect(this, &DataScope::sgDataCache, m_dataScopeThread, &lpDataScopeThread::onDataCache);
+	//connect(this, SIGNAL(sgDataCache12()), m_dataScopeThread, SLOT(onDataCache12()));
+
+	//connect(m_dataScopeThread, &lpDataScopeThread::sgSendData, this, &DataScope::onSendData);
+	
+
 	connect(m_thread, &QThread::started, m_dataScopeThread, &lpDataScopeThread::process);
 
 	m_thread->start();
@@ -43,8 +47,11 @@ DataScope::DataScope(QTableWidget* tableWidget, QObject* parent)
 
 DataScope::~DataScope()
 {
-	m_thread->quit();
-	m_thread->wait();
+	if (m_thread && m_thread->isRunning()) {
+		m_dataScopeThread->stopThread();  
+		m_thread->quit();
+		m_thread->wait();
+	}
 	delete m_dataScopeThread;
 
 	//updateTimer->stop();
@@ -101,65 +108,11 @@ void DataScope::addData(const QString &curveName, double x, double y, const QVar
 	dataCache[curveName].append(qMakePair(x, qMakePair(y, QVariantList{ warningValue, alarmValue })));
 
 	hasNewData = true; // 设置有新数据的标志
-	emit sgDataCache(dataCache);
+	//emit sgDataCache(dataCache);
+	m_dataScopeThread->onDataCache(dataCache);
 
 }
 
-//
-//void DataScope::batchUpdateTable() {
-//	if (!hasNewData)
-//	{
-//		return;
-//	}
-//
-//	for (auto &curveName : dataCache.keys()) {
-//		for (auto &data : dataCache[curveName]) {
-//			double x = data.first;
-//			double y = data.second.first;
-//			QVariantList warningValue = data.second.second[0].toList();
-//			QVariantList alarmValue = data.second.second[1].toList();
-//
-//			int columnIndex = m_columnNames.indexOf(curveName) + 1;
-//			if (columnIndex <= 0) continue;
-//
-//			int existingRow = -1;
-//			for (int i = 0; i < data_tableWidget->rowCount(); ++i) {
-//				if (data_tableWidget->item(i, 0) && qFuzzyCompare(data_tableWidget->item(i, 0)->text().toDouble(), x)) {
-//					existingRow = i;
-//					break;
-//				}
-//			}
-//
-//			if (existingRow == -1) {
-//				existingRow = data_tableWidget->rowCount();
-//				data_tableWidget->insertRow(existingRow);
-//				data_tableWidget->setItem(existingRow, 0, new QTableWidgetItem(QString::number(x)));
-//			}
-//
-//			QTableWidgetItem *item = new QTableWidgetItem(QString::number(y));
-//			// 设置背景颜色根据警告和报警值
-//			if (!alarmValue.isEmpty() && (y > alarmValue[0].toDouble() || y < alarmValue[1].toDouble())) {
-//				item->setBackground(Qt::red);
-//			}
-//			else if (!warningValue.isEmpty() && (y > warningValue[0].toDouble() || y < warningValue[1].toDouble())) {
-//				item->setBackground(QColor(255, 165, 0));
-//			}
-//			else {
-//				item->setBackground(Qt::white);
-//			}
-//
-//			data_tableWidget->setItem(existingRow, columnIndex, item);
-//		}
-//	}
-//
-//	reloadCount++;
-//	dataCache.clear(); // 清空缓存
-//	if (autoScrollEnabled) {
-//		data_tableWidget->scrollToBottom();
-//	}
-//	hasNewData = false;
-//	qDebug() << "表格重载次数：" << reloadCount;
-//}
 
 //数据更新
 void DataScope::onSendData(QString DataName,double xData,double yData, QVariantList warningValue, QVariantList AlarmingValue)
@@ -169,17 +122,15 @@ void DataScope::onSendData(QString DataName,double xData,double yData, QVariantL
 	int columnIndex = m_columnNames.indexOf(DataName) + 1;
 	if (columnIndex <= 0) return;
 
-	int existingRow = -1;
-	for (int i = 0; i < data_tableWidget->rowCount(); ++i) {
-		if (data_tableWidget->item(i, 0) && qFuzzyCompare(data_tableWidget->item(i, 0)->text().toDouble(), xData)) {
-			existingRow = i;
-			break;
-		}
-	}
+	// 使用哈希表来存储xData与行号的映射，减少查找时间
+	static QMap<double, int> xDataToRowMap;
+	int existingRow = xDataToRowMap.value(xData, -1);
+
 	if (existingRow == -1) {
 		existingRow = data_tableWidget->rowCount();
 		data_tableWidget->insertRow(existingRow);
 		data_tableWidget->setItem(existingRow, 0, new QTableWidgetItem(QString::number(xData)));
+		xDataToRowMap[xData] = existingRow; // 更新映射表
 	}
 
 	QTableWidgetItem *item = new QTableWidgetItem(QString::number(yData));
@@ -200,6 +151,7 @@ void DataScope::onSendData(QString DataName,double xData,double yData, QVariantL
 	if (autoScrollEnabled) {
 		data_tableWidget->scrollToBottom();
 	}
+	dataCache.clear(); // 清空缓存
 
 }
 

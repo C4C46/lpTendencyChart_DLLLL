@@ -31,6 +31,7 @@ public:
 
 signals:
 	void sgDataCache(QMap<QString, QList<QPair<double, QPair<double, QVariantList>>>> dataCache);
+		
 
 public slots:
 	void onSendData(QString DataName, double xData, double yData, QVariantList warningValue, QVariantList AlarmingValue);

@@ -5,10 +5,18 @@ lpDataScopeThread::lpDataScopeThread()
 
 }
 
+
+
 lpDataScopeThread::~lpDataScopeThread()
 {
-	m_runFlag = false;
+
 	m_dataCache.clear();
+}
+
+void lpDataScopeThread::stopThread()
+{
+	QMutexLocker locker(&m_mutex);
+	m_runFlag = false;
 }
 
 void lpDataScopeThread::process()
@@ -29,7 +37,7 @@ void lpDataScopeThread::process()
 				}
 
 			}
-
+			m_dataCache.clear(); // 清空缓存
 			m_processFlag = false;
 		}
 	}
@@ -39,8 +47,14 @@ void lpDataScopeThread::process()
 
 
 
+
 void lpDataScopeThread::onDataCache(QMap<QString, QList<QPair<double, QPair<double, QVariantList>>>> dataCache)
 {
+
+	if (m_processFlag == true)
+	{
+		return;
+	}
 	m_dataCache = dataCache;
 	m_processFlag = true;
 }
