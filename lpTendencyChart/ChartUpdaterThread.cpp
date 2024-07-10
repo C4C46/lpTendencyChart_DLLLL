@@ -52,6 +52,8 @@ void ChartUpdaterThread::run() {
 			qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
 			if (sortedData.isEmpty() || x >= sortedData.lastKey() || (currentTime - lastProcessTime <= 2000 && x < sortedData.lastKey())) {
 				sortedData.insert(x, json);
+				QJsonDocument doc(json);
+				QString strJson(doc.toJson(QJsonDocument::Compact)); 
 			}
 		}
 		locker.unlock();

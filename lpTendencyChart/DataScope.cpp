@@ -34,7 +34,7 @@ DataScope::DataScope(QTableWidget* tableWidget, QObject* parent)
 	//connect(this, &DataScope::sgDataCache, m_dataScopeThread, &lpDataScopeThread::onDataCache);
 	//connect(this, SIGNAL(sgDataCache12()), m_dataScopeThread, SLOT(onDataCache12()));
 
-	//connect(m_dataScopeThread, &lpDataScopeThread::sgSendData, this, &DataScope::onSendData);
+	connect(m_dataScopeThread, &lpDataScopeThread::sgSendData, this, &DataScope::onSendData);
 	
 
 	connect(m_thread, &QThread::started, m_dataScopeThread, &lpDataScopeThread::process);
@@ -125,7 +125,7 @@ void DataScope::onSendData(QString DataName,double xData,double yData, QVariantL
 	// 使用哈希表来存储xData与行号的映射，减少查找时间
 	static QMap<double, int> xDataToRowMap;
 	int existingRow = xDataToRowMap.value(xData, -1);
-
+	data_tableWidget->setUpdatesEnabled(false);
 	if (existingRow == -1) {
 		existingRow = data_tableWidget->rowCount();
 		data_tableWidget->insertRow(existingRow);
@@ -146,7 +146,7 @@ void DataScope::onSendData(QString DataName,double xData,double yData, QVariantL
 	}
 
 	data_tableWidget->setItem(existingRow, columnIndex, item);
-
+	data_tableWidget->setUpdatesEnabled(true);
 
 	if (autoScrollEnabled) {
 		data_tableWidget->scrollToBottom();
