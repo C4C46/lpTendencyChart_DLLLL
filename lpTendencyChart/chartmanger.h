@@ -39,40 +39,29 @@ public:
 	~ChartManager();
     void start();
 	QWidget* getWidget();
-
 	double adjustXValue(double originalX);
-
-	QwtPlot* GetPlot() const { return plot;}
-	QTableWidget* GetTable() const { return table;}
-
+	//QwtPlot* GetPlot() const { return plot;}
+	//QTableWidget* GetTable() const { return table;}
 
 protected:
-	bool eventFilter(QObject *watched, QEvent *event) override;
+	bool eventFilter(QObject *watched, QEvent *event) override; //界面操作规则
 
 public slots:
 	void onChartUpdate(const QString &curveName, double x, double y);
-	void onIntervalPBClicked();
-	void AlignPBClicked();
-
-	QString determineParentCategory(const QString & alignmentName);
-	bool isSameCategory(const QString & option1, const QString & option2);
-
-	void addCurve(const QString &curveName); 
-	void onLegendClicked(const QVariant &itemInfo, int index);
-	void onCurveDisplayChanged(const QString &curveName, bool display); // 添加这个槽函数
-
-	void updateYAxisRange(const QVariantList & yAxisRange);
-
-	void updateWarningValue(const QVariantList & warningValue);
-
-	void updateAlarmValue(const QVariantList & alarmValue);
-
-	void onSliderValueChanged(int value);
-
-	void updateSliderPosition();
-
-	void batchUpdateChart(); // 批量更新图表的方法
-
+	void onIntervalPBClicked();//参数设置
+	void AlignPBClicked();//对齐度设置
+	bool isSameCategory(const QString & option1, const QString & option2);//判断是否是统一类别，进行对齐度比对
+	void addCurve(const QString &curveName); // 添加曲线
+	void onLegendClicked(const QVariant &itemInfo, int index);//点击对应曲线名称，曲线进行凸显
+	void onCurveDisplayChanged(const QString &curveName, bool display); // 曲线状态改变
+	void updateYAxisRange(const QVariantList & yAxisRange);//更新y轴范围
+	void updateWarningValue(const QVariantList & warningValue);//更新预警值范围
+	void updateAlarmValue(const QVariantList & alarmValue);//更新报警值范围
+	void onSliderValueChanged(int value);//趋势图拖拽进度条控制
+	void updateSliderPosition();//更新进度条滑块的位置
+	void batchUpdateChart(); // 批量更新图表
+	QString determineParentCategory(const QString & alignmentName);//确定父类别（陶瓷、极耳、电浆）
+	
 private:
 	QWidget *m_widget; 
 	QwtPlot *plot; 
@@ -85,29 +74,21 @@ private:
 	double xInterval = 10; // 默认x间隔值
 	//double yInterval = 10; // 默认y间隔值
 	QTableWidget *table; // 添加表格成员变量
-
 	bool autoScrollEnabled = true; // 默认启用自动滚动
-
 	void resetCurvesOpacity(); // 添加成员变量存储曲线名称
 	void installEventFilters();//恢复所有曲线显示
-
-
+	//预警和报警阈值范围
 	double m_warningValueLower;
 	double m_warningValueUpper;
 	double m_alarmValueLower;
 	double m_alarmValueUpper;
-
 	QPoint dragStartPosition; // 用于跟踪拖动开始时的鼠标位置
 	double xMinCurrent, xMaxCurrent; // 用于跟踪当前图表的X轴范围
 	bool isDragging = false; // 标记是否正在拖动
 	bool isViewingHistory = false;
-
 	QSlider *m_slider;//趋势图滚动条
 	int replotCount = 0;
-
-
 	QTimer *updateTimer; // 用于批量更新图表
-
 	bool hasNewData = false;
 };
 

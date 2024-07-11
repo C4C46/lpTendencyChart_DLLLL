@@ -229,7 +229,7 @@ void ConfigLoader::loadConfig(const QString &filePath) {
 	
 
 			QObject::connect(checkBox, &QCheckBox::toggled, [this, childName](bool checked) {
-				QStringList selectedCurveNames = getCurveNames();
+				//QStringList selectedCurveNames = getCurveNames();
 				emit curveDisplayChanged(childName, checked);
 			});
 		}

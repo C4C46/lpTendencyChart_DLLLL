@@ -70,7 +70,7 @@ void lpTendencyChart::init()
 	connect(chartUpdaterThread, &ChartUpdaterThread::updateChart, this, &lpTendencyChart::updateData);
 	connect(ui->Interval_PB, &QPushButton::clicked, this, &lpTendencyChart::handleIntervalPBClicked);
 	connect(ui->Toggle_PB, &QPushButton::clicked, this, &lpTendencyChart::toggleTableVisibility);
-	connect(ui->Align_PB, &QPushButton::clicked, this, &lpTendencyChart::AlianPBClicked);
+	connect(ui->Align_PB, &QPushButton::clicked, this, &lpTendencyChart::AlignPBClicked);
 	connect(configLoader, &ConfigLoader::curveNamesChanged, dataScope, &DataScope::setColumnNames);
 }
 
@@ -89,7 +89,7 @@ void lpTendencyChart::toggleTableVisibility()
 	ui->Toggle_PB->setText(ui->treeWidget->isVisible() ? "趋势指标勾选隐藏" : "趋势指标勾选显示");
 }
 
-void lpTendencyChart::AlianPBClicked()
+void lpTendencyChart::AlignPBClicked()
 {
 	if (chartManager)
 	{
@@ -100,32 +100,32 @@ void lpTendencyChart::AlianPBClicked()
 
 
 
-void lpTendencyChart::processLithiumAllRegionInfo(const LithiumAllRegionInfo_Tag &info) {
-	// 定义一个lambda函数来处理QMap数据
-	auto processMap = [this](const QMap<qint64, QMap<QString, double>> &map) {
-		for (auto it = map.begin(); it != map.end(); ++it) {
-			qint64 x = it.key();  // 米数，对应X值
-			const QMap<QString, double> &innerMap = it.value();
-			for (auto innerIt = innerMap.begin(); innerIt != innerMap.end(); ++innerIt) {
-				QString curveName = innerIt.key();  // 通道名称，作为curveName
-				double y = innerIt.value();  // 通道宽度，对应Y值
-				// 调用updateData方法更新数据
-				updateData(curveName, x, y);
-			}
-		}
-	};
-
-	// 处理每个区域的数据
-	processMap(info.firstcoorNameEregioninfowidth);
-	processMap(info.secondcoorNameEregioninfowidth);
-	processMap(info.firstcoorNameEregioninfowidth);
-	processMap(info.secondcoorNameEregioninfowidth);
-	processMap(info.firstcoorNameEregioninfowidth);
-	processMap(info.secondcoorNameEregioninfowidth);
-	processMap(info.firstcoorNamecalculatecenterinfowidth);
-	processMap(info.secondcoorNamecalculatecenterinfowidth);
-	processMap(info.contactNameAndAlignment);
-}
+//void lpTendencyChart::processLithiumAllRegionInfo(const LithiumAllRegionInfo_Tag &info) {
+//	// 定义一个lambda函数来处理QMap数据
+//	auto processMap = [this](const QMap<qint64, QMap<QString, double>> &map) {
+//		for (auto it = map.begin(); it != map.end(); ++it) {
+//			qint64 x = it.key();  // 米数，对应X值
+//			const QMap<QString, double> &innerMap = it.value();
+//			for (auto innerIt = innerMap.begin(); innerIt != innerMap.end(); ++innerIt) {
+//				QString curveName = innerIt.key();  // 通道名称，作为curveName
+//				double y = innerIt.value();  // 通道宽度，对应Y值
+//				// 调用updateData方法更新数据
+//				updateData(curveName, x, y);
+//			}
+//		}
+//	};
+//
+//	// 处理每个区域的数据
+//	processMap(info.firstcoorNameEregioninfowidth);
+//	processMap(info.secondcoorNameEregioninfowidth);
+//	processMap(info.firstcoorNameEregioninfowidth);
+//	processMap(info.secondcoorNameEregioninfowidth);
+//	processMap(info.firstcoorNameEregioninfowidth);
+//	processMap(info.secondcoorNameEregioninfowidth);
+//	processMap(info.firstcoorNamecalculatecenterinfowidth);
+//	processMap(info.secondcoorNamecalculatecenterinfowidth);
+//	processMap(info.contactNameAndAlignment);
+//}
 
 
 
@@ -149,20 +149,20 @@ void lpTendencyChart::updateData(const QString &curveName, double x, double y) {
 	dataScope->addData(curveName, x, y, warningValue, alarmValue);
 
 
-	// 如果曲线被用户选中，则更新图表
-	if (configLoader->getCurveNames().contains(curveName)) {
-		chartManager->onChartUpdate(curveName, x, y);
-	}
+	//// 如果曲线被用户选中，则更新图表
+	//if (configLoader->getCurveNames().contains(curveName)) {
+	//	chartManager->onChartUpdate(curveName, x, y);
+	//}
 }
 
 
-QwtPlot* lpTendencyChart::getPlot() const {
-	return chartManager ? chartManager->GetPlot() : nullptr;
-}
-
-QTableWidget* lpTendencyChart::getTable() const {
-	return chartManager ? chartManager->GetTable() : nullptr;
-}
+//QwtPlot* lpTendencyChart::getPlot() const {
+//	return chartManager ? chartManager->GetPlot() : nullptr;
+//}
+//
+//QTableWidget* lpTendencyChart::getTable() const {
+//	return chartManager ? chartManager->GetTable() : nullptr;
+//}
 
 
 

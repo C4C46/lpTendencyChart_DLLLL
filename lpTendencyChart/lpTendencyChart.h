@@ -46,26 +46,27 @@ class LPTENDENCYCHART_EXPORT lpTendencyChart : public QWidget
 public:
 	lpTendencyChart(QWidget *parent = nullptr);
 	~lpTendencyChart();
-
 	void init();
-	QwtPlot* getPlot() const;
-	QTableWidget* getTable() const;
+	//QwtPlot* getPlot() const;
+	//QTableWidget* getTable() const;
 
 public slots:
-	void updateData(const QString &curveName, double x, double y);
-	void handleIntervalPBClicked();
-	void toggleTableVisibility();
-	void AlianPBClicked();
+	/*
+	cureName:工位名称;
+	x:米数;
+	y:对齐度/宽度/居中度	
+	*/
+	void updateData(const QString &curveName, double x, double y);//接收数据
+	void handleIntervalPBClicked();//参数设置
+	void toggleTableVisibility();//趋势勾选指标控制是否隐藏
+	void AlignPBClicked();//对齐度设置
 
-
-
-	void processLithiumAllRegionInfo(const LithiumAllRegionInfo_Tag & info);
 
 private:
 	Ui_lpTendencyClass *ui{ nullptr };
-	ChartManager *chartManager{ nullptr };
-	ConfigLoader *configLoader{ nullptr };
-	ChartUpdaterThread *chartUpdaterThread;
-	DataScope *dataScope{nullptr};
+	ChartManager *chartManager{ nullptr };//趋势图管理
+	ConfigLoader *configLoader{ nullptr };//配置文件加载
+	ChartUpdaterThread *chartUpdaterThread;//数据更新工作线程
+	DataScope *dataScope{nullptr};//数据表格
 
 };
