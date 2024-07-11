@@ -93,7 +93,7 @@ ChartManager::ChartManager(QObject *parent, QWidget *parentWidget, const QString
 /*	m_slider->setRange(0, 1000); */ // 假设x的最大值是1000m
 	connect(m_slider, &QSlider::valueChanged, this, &ChartManager::onSliderValueChanged);
 
-	connect(updaterThread, &ChartUpdaterThread::updateChart, this, &ChartManager::onChartUpdate);
+	//connect(updaterThread, &ChartUpdaterThread::updateChart, this, &ChartManager::onChartUpdate);
 	// 连接图例点击信号
 	connect(legend, SIGNAL(clicked(const QVariant &, int)), this, SLOT(onLegendClicked(const QVariant &, int)));
 

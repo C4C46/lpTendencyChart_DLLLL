@@ -67,7 +67,8 @@ void lpTendencyChart::init()
 
 	ui->Toggle_PB->setText("趋势指标勾选隐藏");
 	connect(configLoader, &ConfigLoader::curveDisplayChanged, chartManager, &ChartManager::onCurveDisplayChanged);
-	connect(chartUpdaterThread, &ChartUpdaterThread::updateChart, this, &lpTendencyChart::updateData);
+	connect(chartUpdaterThread, &ChartUpdaterThread::updateChart, this, &lpTendencyChart::updateDataScope);
+	connect(chartUpdaterThread, &ChartUpdaterThread::updateChart, this, &lpTendencyChart::updateDataChart);
 	connect(ui->Interval_PB, &QPushButton::clicked, this, &lpTendencyChart::handleIntervalPBClicked);
 	connect(ui->Toggle_PB, &QPushButton::clicked, this, &lpTendencyChart::toggleTableVisibility);
 	connect(ui->Align_PB, &QPushButton::clicked, this, &lpTendencyChart::AlignPBClicked);
@@ -129,7 +130,7 @@ void lpTendencyChart::AlignPBClicked()
 
 
 
-void lpTendencyChart::updateData(const QString &curveName, double x, double y) {
+void lpTendencyChart::updateDataScope(const QString &curveName, double x, double y) {
 	//qDebug() << "Updating data for" << curveName << "with X:" << x << "Y:" << y;
 
 	// 获取当前曲线所属的父类名称
@@ -156,13 +157,14 @@ void lpTendencyChart::updateData(const QString &curveName, double x, double y) {
 }
 
 
-//QwtPlot* lpTendencyChart::getPlot() const {
-//	return chartManager ? chartManager->GetPlot() : nullptr;
-//}
-//
-//QTableWidget* lpTendencyChart::getTable() const {
-//	return chartManager ? chartManager->GetTable() : nullptr;
-//}
+void lpTendencyChart::updateDataChart(const QString &curveName, double x, double y) {
+
+	chartManager->onChartUpdate(curveName, x, y);
+
+}
+
+
+
 
 
 

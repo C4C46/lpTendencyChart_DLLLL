@@ -56,7 +56,8 @@ public slots:
 	x:米数;
 	y:对齐度/宽度/居中度	
 	*/
-	void updateData(const QString &curveName, double x, double y);//接收数据
+	void updateDataScope(const QString &curveName, double x, double y);//接收数据更新数据表格
+	void updateDataChart(const QString &curveName, double x, double y);//接收数据更新趋势图
 	void handleIntervalPBClicked();//参数设置
 	void toggleTableVisibility();//趋势勾选指标控制是否隐藏
 	void AlignPBClicked();//对齐度设置

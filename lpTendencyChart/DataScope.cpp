@@ -26,20 +26,21 @@ DataScope::DataScope(QTableWidget* tableWidget, QObject* parent)
 	//connect(updateTimer, &QTimer::timeout, this, &DataScope::batchUpdateTable);
 	//updateTimer->start(1000); // 每1000毫秒（1秒）触发一次
 
-	qRegisterMetaType< QMap<QString, QList<QPair<double, QPair<double, QVariantList>>>>>("QMap<QString, QList<QPair<double, QPair<double, QVariantList>>>>");
+	qRegisterMetaType<QMap<QString, QList<QPair<double, QPair<double, QVariantList>>>>>("QMap<QString, QList<QPair<double, QPair<double, QVariantList>>>>");
 	m_dataScopeThread = new lpDataScopeThread();
 	m_thread = new QThread(this);
 	m_dataScopeThread->moveToThread(m_thread);
 
-	//connect(this, &DataScope::sgDataCache, m_dataScopeThread, &lpDataScopeThread::onDataCache);
-	//connect(this, SIGNAL(sgDataCache12()), m_dataScopeThread, SLOT(onDataCache12()));
+	connect(this, &DataScope::sgDataCache, m_dataScopeThread, &lpDataScopeThread::onDataCache);
 
 	connect(m_dataScopeThread, &lpDataScopeThread::sgSendData, this, &DataScope::onSendData);
 	
 
-	connect(m_thread, &QThread::started, m_dataScopeThread, &lpDataScopeThread::process);
+	//connect(m_thread, &QThread::started, m_dataScopeThread, &lpDataScopeThread::process);
+	
 
 	m_thread->start();
+
 
 }
 
@@ -56,6 +57,8 @@ DataScope::~DataScope()
 
 	//updateTimer->stop();
 }
+
+
 
 void DataScope::setColumnNames(const QStringList & names)
 {
@@ -108,8 +111,10 @@ void DataScope::addData(const QString &curveName, double x, double y, const QVar
 	dataCache[curveName].append(qMakePair(x, qMakePair(y, QVariantList{ warningValue, alarmValue })));
 
 	hasNewData = true; // 设置有新数据的标志
-	//emit sgDataCache(dataCache);
-	m_dataScopeThread->onDataCache(dataCache);
+
+
+	emit sgDataCache(dataCache);
+	//m_dataScopeThread->onDataCache(dataCache);
 
 }
 

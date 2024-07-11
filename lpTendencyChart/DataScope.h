@@ -26,6 +26,9 @@ public:
 	void loadSettingsFromFile();//加载对应列的位置信息
 	void saveSettingsToFile();//保存对应列的位置信息
 		
+signals:
+	void sgDataCache(QMap<QString, QList<QPair<double, QPair<double, QVariantList>>>> dataCache);
+
 public slots:
 	void onSendData(QString DataName, double xData, double yData, QVariantList warningValue, QVariantList AlarmingValue);//更新表格中的数据内容
 
